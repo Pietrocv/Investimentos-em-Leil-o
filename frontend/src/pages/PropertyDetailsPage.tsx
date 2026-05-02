@@ -15,6 +15,7 @@ export function PropertyDetailsPage() {
   const { id } = useParams();
   const [p, setP] = useState<any>();
   const [investors, setInvestors] = useState<any[]>([]);
+  const [editingExpense, setEditingExpense] = useState<any>(null);
   const load = () => api.get(`/properties/${id}`).then((r) => setP(r.data));
 
   useEffect(() => {
@@ -64,6 +65,23 @@ export function PropertyDetailsPage() {
         <ExpenseForm investors={p.investors} onSubmit={async (d) => { await api.post(`/properties/${id}/expenses`, d); load(); }} />
       </Card>
 
+      {editingExpense && (
+        <Card>
+          <h2 className="mb-3 text-lg font-bold text-brand-navy">Editar custo</h2>
+          <ExpenseForm
+            investors={p.investors}
+            initial={editingExpense}
+            submitLabel="Salvar custo"
+            onCancel={() => setEditingExpense(null)}
+            onSubmit={async (d) => {
+              await api.patch(`/expenses/${editingExpense.id}`, d);
+              setEditingExpense(null);
+              load();
+            }}
+          />
+        </Card>
+      )}
+
       <Card>
         <h2 className="mb-3 text-lg font-bold text-brand-navy">Custos</h2>
         <Table>
@@ -73,6 +91,7 @@ export function PropertyDetailsPage() {
               <Th>Categoria</Th>
               <Th>Valor</Th>
               <Th>Aplicacao</Th>
+              <Th>Acoes</Th>
             </tr>
           </thead>
           <tbody>
@@ -82,6 +101,12 @@ export function PropertyDetailsPage() {
                 <Td>{e.category}</Td>
                 <Td>{brl(e.amount)}</Td>
                 <Td>{e.paidByInvestor?.name ? `100% para ${e.paidByInvestor.name}` : "Dividido entre investidores"}</Td>
+                <Td>
+                  <div className="flex gap-2">
+                    <button className="rounded-md border border-brand-green/25 px-3 py-1 text-xs text-brand-green hover:bg-brand-green/10" onClick={() => setEditingExpense(e)}>Editar</button>
+                    <button className="rounded-md border border-red-400/25 px-3 py-1 text-xs text-red-200 hover:bg-red-500/10" onClick={async () => { if (confirm("Excluir este custo?")) { await api.delete(`/expenses/${e.id}`); load(); } }}>Excluir</button>
+                  </div>
+                </Td>
               </tr>
             ))}
           </tbody>
