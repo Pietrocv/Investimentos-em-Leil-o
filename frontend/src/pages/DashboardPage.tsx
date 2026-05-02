@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { SummaryCard } from "../components/SummaryCard";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
@@ -10,10 +10,31 @@ import { brl, pct } from "../lib/utils";
 export function DashboardPage() {
   const [s, setS] = useState<any>();
   const [selectedYear, setSelectedYear] = useState("TODOS");
+  const location = useLocation();
+
+  const loadDashboard = useCallback(async () => {
+    const response = await api.get(`/dashboard/summary?updatedAt=${Date.now()}`);
+    setS(response.data);
+  }, []);
 
   useEffect(() => {
-    api.get("/dashboard/summary").then((r) => setS(r.data));
-  }, []);
+    loadDashboard();
+  }, [loadDashboard, location.key]);
+
+  useEffect(() => {
+    const refresh = () => loadDashboard();
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    window.addEventListener("focus", refresh);
+    window.addEventListener("pageshow", refresh);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("pageshow", refresh);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
+  }, [loadDashboard]);
 
   if (!s) return <p>Carregando dashboard...</p>;
 
@@ -45,6 +66,9 @@ export function DashboardPage() {
             <option value="TODOS">Todos os anos</option>
             {s.years.map((year: any) => <option key={year.year} value={year.year}>{year.year}</option>)}
           </select>
+          <Button type="button" onClick={loadDashboard}>
+            Atualizar
+          </Button>
           <Button type="button" onClick={exportSpreadsheet}>
             Exportar planilha
           </Button>
