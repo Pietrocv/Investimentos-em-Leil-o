@@ -13,6 +13,10 @@ function propertyYear(property: any) {
   return date && !Number.isNaN(date.getTime()) ? String(date.getFullYear()) : "Sem ano";
 }
 
+function statusLabel(status: string) {
+  return status === "VENDIDO" ? "Vendido" : "Vendendo";
+}
+
 export function PropertiesPage() {
   const [items, setItems] = useState<any[]>([]);
 
@@ -72,7 +76,7 @@ export function PropertiesPage() {
                       {p.name}
                     </Link>
                   </Td>
-                  <Td><Badge>{p.status}</Badge></Td>
+                  <Td><Badge>{statusLabel(p.status)}</Badge></Td>
                   <Td>{p.isOccupied ? "Ocupado" : "Desocupado"}</Td>
                   <Td>{brl(p.purchasePrice)}</Td>
                   <Td>{brl(p.currentAppraisal)}</Td>

@@ -187,7 +187,7 @@ export function DashboardPage() {
                       {p.name}
                     </Link>
                   </Td>
-                  <Td>{p.status}</Td>
+                  <Td>{p.status === "VENDIDO" ? "Vendido" : "Vendendo"}</Td>
                 </tr>
               ))}
             </tbody>

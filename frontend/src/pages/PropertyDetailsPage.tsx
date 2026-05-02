@@ -39,7 +39,7 @@ export function PropertyDetailsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Badge>{p.status}</Badge>
+          <Badge>{statusLabel(p.status)}</Badge>
           <Link to={`/properties/${p.id}/edit`}>
             <Button>Editar imovel</Button>
           </Link>
@@ -214,6 +214,10 @@ function categoryLabel(category: string) {
     CARTORIO_2: "Documentacao Venda"
   };
   return labels[category] || category;
+}
+
+function statusLabel(status: string) {
+  return status === "VENDIDO" ? "Vendido" : "Vendendo";
 }
 
 const documentationItems = ["Registro", "ITBI", "Escritura", "Taxa a vista", "Produto", "Matricula + Onus", "Abono", "Certidao"];

@@ -7,7 +7,7 @@ import { calculateInvestorReturns, calculatePropertySummary } from "../services/
 const propertySchema = z.object({
   name: z.string().min(1), unit: z.string().optional().nullable(), city: z.string().optional().nullable(), district: z.string().optional().nullable(), address: z.string().optional().nullable(),
   isOccupied: z.coerce.boolean().optional().default(false),
-  type: z.enum(["APARTAMENTO", "CASA"]).default("APARTAMENTO"), status: z.enum(["EM_ANALISE", "ARREMATADO", "EM_REGULARIZACAO", "EM_REFORMA", "A_VENDA", "VENDIDO", "CANCELADO"]).default("EM_ANALISE"),
+  type: z.enum(["APARTAMENTO", "CASA"]).default("APARTAMENTO"), status: z.enum(["VENDENDO", "VENDIDO"]).default("VENDENDO"),
   purchasePrice: z.coerce.number().nonnegative(), currentAppraisal: z.coerce.number().nonnegative().optional().nullable(), oldAppraisal: z.coerce.number().nonnegative().optional().nullable(), finalSalePrice: z.coerce.number().nonnegative().optional().nullable(),
   purchaseDate: z.coerce.date().optional().nullable(), appraisalDate: z.coerce.date().optional().nullable(), saleDate: z.coerce.date().optional().nullable(), returnDate: z.coerce.date().optional().nullable(),
   registryNumber: z.string().optional().nullable(), iptuNumber: z.string().optional().nullable(), buyerCpf: z.string().optional().nullable(), condominiumMonths: z.coerce.number().int().nonnegative().optional().nullable(), condominiumMonthlyValue: z.coerce.number().nonnegative().optional().nullable(), condominiumOldDebt: z.coerce.number().nonnegative().optional().nullable(), condominiumTotal: z.coerce.number().nonnegative().optional().nullable(), condominiumLastPaidMonth: z.string().optional().nullable(), notes: z.string().optional().nullable()

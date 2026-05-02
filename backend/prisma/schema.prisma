@@ -20,6 +20,7 @@ enum PropertyStatus {
   EM_REGULARIZACAO
   EM_REFORMA
   A_VENDA
+  VENDENDO
   VENDIDO
   CANCELADO
 }
@@ -84,7 +85,7 @@ model Property {
   address                    String?
   isOccupied                 Boolean            @default(false)
   type                       PropertyType       @default(APARTAMENTO)
-  status                     PropertyStatus     @default(EM_ANALISE)
+  status                     PropertyStatus     @default(VENDENDO)
   purchasePrice              Decimal            @db.Decimal(14, 2)
   currentAppraisal           Decimal?           @db.Decimal(14, 2)
   oldAppraisal               Decimal?           @db.Decimal(14, 2)

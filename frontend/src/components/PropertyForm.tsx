@@ -6,13 +6,8 @@ import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 
 const statuses = [
-  ["EM_ANALISE", "Em analise"],
-  ["ARREMATADO", "Arrematado"],
-  ["EM_REGULARIZACAO", "Em regularizacao"],
-  ["EM_REFORMA", "Em reforma"],
-  ["A_VENDA", "A venda"],
-  ["VENDIDO", "Vendido"],
-  ["CANCELADO", "Cancelado"]
+  ["VENDENDO", "Vendendo"],
+  ["VENDIDO", "Vendido"]
 ];
 
 const types = [
@@ -21,7 +16,8 @@ const types = [
 ];
 
 export function PropertyForm({ initial, onSubmit }: { initial?: any; onSubmit: (data: any) => Promise<void> }) {
-  const [f, setF] = useState<any>({ name: "", type: "APARTAMENTO", status: "EM_ANALISE", isOccupied: false, purchasePrice: 0, ...initial });
+  const normalizedInitial = initial ? { ...initial, status: initial.status === "VENDIDO" ? "VENDIDO" : "VENDENDO" } : undefined;
+  const [f, setF] = useState<any>({ name: "", type: "APARTAMENTO", status: "VENDENDO", isOccupied: false, purchasePrice: 0, ...normalizedInitial });
 
   useEffect(() => {
     const monthsTotal = Number(f.condominiumMonths || 0) * Number(f.condominiumMonthlyValue || 0);
