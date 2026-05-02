@@ -71,6 +71,19 @@ export function DashboardPage() {
         </Table>
       </Card>
 
+      <Card>
+        <h2 className="mb-1 text-lg font-bold text-brand-navy">Lucros por ano</h2>
+        <p className="mb-3 text-sm text-slate-600">Somente a parte vinculada ao usuario logado.</p>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {s.userProfitByYear.map((item: any) => (
+            <div key={item.year} className="rounded-lg border border-brand-green/20 bg-brand-green/10 p-4 transition hover:-translate-y-1 hover:border-brand-green/45">
+              <span className="text-sm font-semibold text-brand-green">{item.year}</span>
+              <strong className="mt-2 block text-2xl text-brand-text">{brl(item.profit)}</strong>
+            </div>
+          ))}
+        </div>
+      </Card>
+
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <h2 className="mb-3 font-bold text-brand-navy">Top 5 por lucro</h2>

@@ -17,6 +17,15 @@ function getOwnershipPercent(link: any, totalContributions: number) {
   return totalContributions > 0 ? n(link.initialContribution) / totalContributions : 0;
 }
 
+function matchesInvestorUser(link: any, user?: any) {
+  if (!user || !link?.investor) return false;
+  const userEmail = String(user.email || "").trim().toLowerCase();
+  const userName = String(user.name || "").trim().toLowerCase();
+  const investorEmail = String(link.investor.email || "").trim().toLowerCase();
+  const investorName = String(link.investor.name || "").trim().toLowerCase();
+  return Boolean((userEmail && investorEmail && userEmail === investorEmail) || (userName && investorName && userName === investorName));
+}
+
 export function calculateMonthsBetweenDates(startDate?: Date | string | null, endDate?: Date | string | null) {
   if (!startDate || !endDate) return null;
   const start = new Date(startDate);
@@ -101,7 +110,7 @@ function calculateTotals(properties: any[]) {
   return { enriched, totals, sold };
 }
 
-export function calculateDashboardSummary(properties: any[]) {
+export function calculateDashboardSummary(properties: any[], user?: any) {
   const { enriched, totals, sold } = calculateTotals(properties);
   const yearGroups = properties.reduce<Record<string, any[]>>((acc, property) => {
     const year = String(getPropertyYear(property));
@@ -129,6 +138,16 @@ export function calculateDashboardSummary(properties: any[]) {
     if (b.year === "Sem ano") return -1;
     return Number(b.year) - Number(a.year);
   });
+  const userProfitByYear = years.map(({ year }) => {
+    const items = yearGroups[year] || [];
+    const profit = items.reduce((sum, property) => {
+      if (!property.finalSalePrice) return sum;
+      const investorReturn = calculateInvestorReturns(property).find((link: any) => matchesInvestorUser(link, user));
+      if (!investorReturn) return sum;
+      return sum + (investorReturn.finalReturn - investorReturn.totalInvestorCost);
+    }, 0);
+    return { year, profit };
+  });
   return {
     totalProperties: properties.length,
     totalInvested: totals.totalInvested,
@@ -141,6 +160,7 @@ export function calculateDashboardSummary(properties: any[]) {
     soldProperties: sold,
     activeProperties: properties.length - sold,
     years,
+    userProfitByYear,
     topProfitProperties: enriched.sort((a, b) => (b.summary.finalProfit || 0) - (a.summary.finalProfit || 0)).slice(0, 5).map(({ property, summary }) => ({ id: property.id, name: property.name, profit: summary.finalProfit })),
     pendingSaleProperties: properties.filter((p) => p.status !== "VENDIDO").map((p) => ({ id: p.id, name: p.name, status: p.status, expectedSalePrice: n(p.expectedSalePrice) }))
   };
