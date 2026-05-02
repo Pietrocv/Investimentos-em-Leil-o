@@ -12,6 +12,7 @@ Sistema web para controlar investimentos em imoveis adquiridos em leilao, substi
 - Multiplos investidores por imovel via `PropertyInvestor`.
 - Pagamentos aos investidores via `InvestorPayment`.
 - Calculos financeiros centralizados no backend.
+- Exportacao CSV autenticada para levar os dados consolidados de volta para planilha.
 - Configuracoes com CDI anual para uso futuro.
 - Docker Compose com PostgreSQL, backend e frontend.
 
@@ -170,12 +171,17 @@ Pagamentos:
 
 - `GET /properties/:propertyId/payments`
 - `POST /properties/:propertyId/payments`
+- `PATCH /investor-payments/:id`
 - `DELETE /investor-payments/:id`
 
 Configuracoes:
 
 - `GET /settings`
 - `PATCH /settings`
+
+Exportacao:
+
+- `GET /export/spreadsheet.csv`
 
 ## Git
 

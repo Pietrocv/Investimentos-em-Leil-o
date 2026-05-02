@@ -16,6 +16,8 @@ export function PropertyDetailsPage() {
   const [p, setP] = useState<any>();
   const [investors, setInvestors] = useState<any[]>([]);
   const [editingExpense, setEditingExpense] = useState<any>(null);
+  const [editingInvestor, setEditingInvestor] = useState<any>(null);
+  const [editingPayment, setEditingPayment] = useState<any>(null);
   const load = () => api.get(`/properties/${id}`).then((r) => setP(r.data));
 
   useEffect(() => {
@@ -123,6 +125,23 @@ export function PropertyDetailsPage() {
         <PropertyInvestorForm investors={investors} onSubmit={async (d) => { await api.post(`/properties/${id}/investors`, d); load(); }} />
       </Card>
 
+      {editingInvestor && (
+        <Card>
+          <h2 className="mb-3 text-lg font-bold text-brand-navy">Editar investidor do imovel</h2>
+          <PropertyInvestorForm
+            investors={investors}
+            initial={editingInvestor}
+            submitLabel="Salvar investidor"
+            onCancel={() => setEditingInvestor(null)}
+            onSubmit={async (d) => {
+              await api.patch(`/property-investors/${editingInvestor.id}`, d);
+              setEditingInvestor(null);
+              load();
+            }}
+          />
+        </Card>
+      )}
+
       <Card>
         <h2 className="mb-3 text-lg font-bold text-brand-navy">Investidores do imovel</h2>
         <Table>
@@ -138,6 +157,7 @@ export function PropertyDetailsPage() {
               <Th>Retorno realizado</Th>
               <Th>Pago</Th>
               <Th>Saldo</Th>
+              <Th>Acoes</Th>
             </tr>
           </thead>
           <tbody>
@@ -153,6 +173,12 @@ export function PropertyDetailsPage() {
                 <Td>{brl(i.finalReturn)}</Td>
                 <Td>{brl(i.amountAlreadyPaid)}</Td>
                 <Td>{brl(i.balanceToPay)}</Td>
+                <Td>
+                  <div className="flex gap-2">
+                    <button className="rounded-md border border-brand-green/25 px-3 py-1 text-xs text-brand-green hover:bg-brand-green/10" onClick={() => setEditingInvestor(p.investors.find((link: any) => link.id === i.id) || i)}>Editar</button>
+                    <button className="rounded-md border border-red-400/25 px-3 py-1 text-xs text-red-200 hover:bg-red-500/10" onClick={async () => { if (confirm("Remover este investidor do imovel?")) { await api.delete(`/property-investors/${i.id}`); load(); } }}>Excluir</button>
+                  </div>
+                </Td>
               </tr>
             ))}
           </tbody>
@@ -164,6 +190,23 @@ export function PropertyDetailsPage() {
         <InvestorPaymentForm links={p.investors} onSubmit={async (d) => { await api.post(`/properties/${id}/payments`, d); load(); }} />
       </Card>
 
+      {editingPayment && (
+        <Card>
+          <h2 className="mb-3 text-lg font-bold text-brand-navy">Editar pagamento ao investidor</h2>
+          <InvestorPaymentForm
+            links={p.investors}
+            initial={editingPayment}
+            submitLabel="Salvar pagamento"
+            onCancel={() => setEditingPayment(null)}
+            onSubmit={async (d) => {
+              await api.patch(`/investor-payments/${editingPayment.id}`, d);
+              setEditingPayment(null);
+              load();
+            }}
+          />
+        </Card>
+      )}
+
       <Card>
         <h2 className="mb-3 text-lg font-bold text-brand-navy">Pagamentos aos investidores</h2>
         <Table>
@@ -173,6 +216,7 @@ export function PropertyDetailsPage() {
               <Th>Valor</Th>
               <Th>Data</Th>
               <Th>Descricao</Th>
+              <Th>Acoes</Th>
             </tr>
           </thead>
           <tbody>
@@ -182,6 +226,12 @@ export function PropertyDetailsPage() {
                 <Td>{brl(pay.amount)}</Td>
                 <Td>{pay.paymentDate?.slice(0, 10)}</Td>
                 <Td>{pay.description}</Td>
+                <Td>
+                  <div className="flex gap-2">
+                    <button className="rounded-md border border-brand-green/25 px-3 py-1 text-xs text-brand-green hover:bg-brand-green/10" onClick={() => setEditingPayment(pay)}>Editar</button>
+                    <button className="rounded-md border border-red-400/25 px-3 py-1 text-xs text-red-200 hover:bg-red-500/10" onClick={async () => { if (confirm("Excluir este pagamento?")) { await api.delete(`/investor-payments/${pay.id}`); load(); } }}>Excluir</button>
+                  </div>
+                </Td>
               </tr>
             ))}
           </tbody>

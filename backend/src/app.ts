@@ -8,6 +8,7 @@ import { investorsRoutes } from "./routes/investors.routes.js";
 import { propertyInvestorsRoutes } from "./routes/property-investors.routes.js";
 import { investorPaymentsRoutes } from "./routes/investor-payments.routes.js";
 import { dashboardRoutes } from "./routes/dashboard.routes.js";
+import { exportRoutes } from "./routes/export.routes.js";
 import { settingsRoutes } from "./routes/settings.routes.js";
 
 export async function buildApp() {
@@ -22,6 +23,7 @@ export async function buildApp() {
   await app.register(propertyInvestorsRoutes);
   await app.register(investorPaymentsRoutes);
   await app.register(dashboardRoutes);
+  await app.register(exportRoutes);
   await app.register(settingsRoutes);
   app.setErrorHandler((error, _request, reply) => {
     if ((error as any).issues) return reply.status(400).send({ message: "Erro de validacao", issues: (error as any).issues });

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { SummaryCard } from "../components/SummaryCard";
+import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
 import { Td, Th, Table } from "../components/ui/table";
 import { api } from "../lib/api";
@@ -15,11 +16,28 @@ export function DashboardPage() {
 
   if (!s) return <p>Carregando dashboard...</p>;
 
+  async function exportSpreadsheet() {
+    const response = await api.get("/export/spreadsheet.csv", { responseType: "blob" });
+    const url = window.URL.createObjectURL(new Blob([response.data], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "investindo-com-leilao.csv";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  }
+
   return (
     <section className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-brand-navy">Dashboard</h1>
-        <p className="text-slate-600">Resumo consolidado dos imoveis de leilao por ano de compra.</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-bold text-brand-navy">Dashboard</h1>
+          <p className="text-slate-600">Resumo consolidado dos imoveis de leilao por ano de compra.</p>
+        </div>
+        <Button type="button" onClick={exportSpreadsheet}>
+          Exportar planilha
+        </Button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
