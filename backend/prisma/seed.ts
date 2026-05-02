@@ -20,17 +20,17 @@ async function main() {
     investors[name] = investor.id;
   }
   const properties = [
-    { name: "Casa Esplanada V", purchasePrice: 75305.50, currentAppraisal: 170000, expectedSalePrice: 153000, finalSalePrice: 145279.04, status: "VENDIDO", links: [["Pietro", 37652.75], ["Victor", 37652.75]] },
-    { name: "Aracati 108 A", purchasePrice: 67068.27, currentAppraisal: 135000, expectedSalePrice: 133000, finalSalePrice: 133000, status: "VENDIDO", links: [["Pietro", 67068.27]] },
-    { name: "Montana B13 01", purchasePrice: 62819.40, currentAppraisal: 153000, expectedSalePrice: 142000, status: "A_VENDA", links: [["Pietro", 31409.70], ["Jeferson", 31409.70]] },
-    { name: "Recanto Jovens 02 A8", purchasePrice: 59444.27, currentAppraisal: 145000, expectedSalePrice: 140000, status: "A_VENDA", links: [["Bia", 59444.27]] },
-    { name: "Lisboa Life", purchasePrice: 70000, currentAppraisal: 135000, expectedSalePrice: 128500, finalSalePrice: 128500, status: "VENDIDO", links: [["Pietro", 35000], ["Rodrigo", 35000]] },
-    { name: "Ed Papaver", purchasePrice: 71404.20, currentAppraisal: 136800, expectedSalePrice: 127640, finalSalePrice: 127640, status: "VENDIDO", links: [["Izabela", 71404.20]] }
+    { name: "Casa Esplanada V", purchasePrice: 75305.50, currentAppraisal: 170000, expectedSalePrice: 153000, finalSalePrice: 145279.04, status: "VENDIDO", purchaseDate: "2025-01-15", saleDate: "2026-02-15", links: [["Pietro", 37652.75], ["Victor", 37652.75]] },
+    { name: "Aracati 108 A", purchasePrice: 67068.27, currentAppraisal: 135000, expectedSalePrice: 133000, finalSalePrice: 133000, status: "VENDIDO", purchaseDate: "2026-01-15", saleDate: "2026-09-15", links: [["Pietro", 67068.27]] },
+    { name: "Montana B13 01", purchasePrice: 62819.40, currentAppraisal: 153000, expectedSalePrice: 142000, status: "A_VENDA", purchaseDate: "2026-01-15", links: [["Pietro", 31409.70], ["Jeferson", 31409.70]] },
+    { name: "Recanto Jovens 02 A8", purchasePrice: 59444.27, currentAppraisal: 145000, expectedSalePrice: 140000, status: "A_VENDA", purchaseDate: "2026-01-15", links: [["Bia", 59444.27]] },
+    { name: "Lisboa Life", purchasePrice: 70000, currentAppraisal: 135000, expectedSalePrice: 128500, finalSalePrice: 128500, status: "VENDIDO", purchaseDate: "2024-01-15", saleDate: "2024-09-15", links: [["Pietro", 35000], ["Rodrigo", 35000]] },
+    { name: "Ed Papaver", purchasePrice: 71404.20, currentAppraisal: 136800, expectedSalePrice: 127640, finalSalePrice: 127640, status: "VENDIDO", purchaseDate: "2025-01-15", saleDate: "2025-09-15", links: [["Izabela", 71404.20]] }
   ] as const;
   for (const item of properties) {
     const existing = await prisma.property.findFirst({ where: { name: item.name } });
     if (existing) continue;
-    const property = await prisma.property.create({ data: { name: item.name, type: PropertyType.APARTAMENTO, status: item.status as PropertyStatus, purchasePrice: item.purchasePrice, currentAppraisal: item.currentAppraisal, expectedSalePrice: item.expectedSalePrice, finalSalePrice: "finalSalePrice" in item ? item.finalSalePrice : undefined, city: "Sete Lagoas", purchaseDate: new Date("2024-01-15"), saleDate: item.status === "VENDIDO" ? new Date("2024-09-15") : undefined, condominiumMonths: 3, condominiumMonthlyValue: 450, condominiumTotal: 1350, registryNumber: `MAT-${item.name.slice(0, 3).toUpperCase()}`, iptuNumber: `IPTU-${item.name.length}`, notes: "Registro criado pelo seed do MVP." } });
+    const property = await prisma.property.create({ data: { name: item.name, type: PropertyType.APARTAMENTO, status: item.status as PropertyStatus, purchasePrice: item.purchasePrice, currentAppraisal: item.currentAppraisal, expectedSalePrice: item.expectedSalePrice, finalSalePrice: "finalSalePrice" in item ? item.finalSalePrice : undefined, city: "Sete Lagoas", purchaseDate: new Date(item.purchaseDate), saleDate: "saleDate" in item ? new Date(item.saleDate) : undefined, condominiumMonths: 3, condominiumMonthlyValue: 450, condominiumTotal: 1350, registryNumber: `MAT-${item.name.slice(0, 3).toUpperCase()}`, iptuNumber: `IPTU-${item.name.length}`, notes: "Registro criado pelo seed do MVP." } });
     for (const [description, category, amount] of expenseSets[item.name]) await prisma.expense.create({ data: { propertyId: property.id, description, category, amount, paymentDate: new Date("2024-03-10") } });
     for (const [name, contribution] of item.links) await prisma.propertyInvestor.create({ data: { propertyId: property.id, investorId: investors[name], initialContribution: contribution, splitType: SplitType.POR_APORTE } });
     const links = await prisma.propertyInvestor.findMany({ where: { propertyId: property.id } });
