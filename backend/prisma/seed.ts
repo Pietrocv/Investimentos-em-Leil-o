@@ -27,13 +27,13 @@ async function main() {
     { name: "Casa Esplanada V", purchasePrice: 75305.50, currentAppraisal: 170000, expectedSalePrice: 153000, finalSalePrice: 145279.04, status: "VENDIDO", purchaseDate: "2025-01-15", saleDate: "2026-02-15", links: [["Pietro", 37652.75], ["Victor", 37652.75]] },
     { name: "Aracati 108 A", purchasePrice: 67068.27, currentAppraisal: 135000, expectedSalePrice: 133000, finalSalePrice: 133000, status: "VENDIDO", purchaseDate: "2026-01-15", saleDate: "2026-09-15", links: [["Pietro", 67068.27]] },
     { name: "Jaspe 07", unit: "07", purchasePrice: 62624.60, currentAppraisal: 142000, expectedSalePrice: 131000, finalSalePrice: 131000, status: "VENDIDO", purchaseDate: "2024-10-01", saleDate: "2025-07-01", links: [["Pietro", 42626.60], ["Victor", 20000]] },
-    { name: "Monte Siao I P 201", unit: "P 201", purchasePrice: 67068.27, currentAppraisal: 140000, expectedSalePrice: 132000, finalSalePrice: 132000, status: "VENDIDO", purchaseDate: "2025-06-26", saleDate: "2025-10-26", links: [] },
-    { name: "Monte Siao V N 201", unit: "N 201", purchasePrice: 76464.05, currentAppraisal: 132000, expectedSalePrice: 110000, finalSalePrice: 110000, status: "VENDIDO", purchaseDate: "2025-07-14", saleDate: "2025-12-26", links: [] },
+    { name: "Monte Siao I P 201", unit: "P 201", purchasePrice: 67068.27, currentAppraisal: 140000, expectedSalePrice: 132000, finalSalePrice: 132000, status: "VENDIDO", purchaseDate: "2025-06-26", saleDate: "2025-10-26", links: [["Pietro", 67068.27]] },
+    { name: "Monte Siao V N 201", unit: "N 201", purchasePrice: 76464.05, currentAppraisal: 132000, expectedSalePrice: 110000, finalSalePrice: 110000, status: "VENDIDO", purchaseDate: "2025-07-14", saleDate: "2025-12-26", links: [["Pietro", 76464.05]] },
     { name: "Montana A15 01", unit: "A15 01", district: "Ypiranga", purchasePrice: 73400, currentAppraisal: 138000, expectedSalePrice: 128270.28, finalSalePrice: 128270.28, status: "VENDIDO", purchaseDate: "2025-01-15", saleDate: "2025-09-15", links: [["Pietro", 25700], ["Jeff", 36700], ["Bia", 11000]] },
     { name: "Montana B13 01", unit: "B13 01", district: "Ypiranga", purchasePrice: 62819.40, currentAppraisal: 153000, expectedSalePrice: 142000, status: "A_VENDA", purchaseDate: "2026-01-15", links: [["Pietro", 31409.70], ["Jeferson", 31409.70]] },
     { name: "Recanto Jovens 02 A8", purchasePrice: 59444.27, currentAppraisal: 145000, expectedSalePrice: 140000, status: "A_VENDA", purchaseDate: "2026-01-15", links: [["Bia", 59444.27]] },
     { name: "Lisboa Life", purchasePrice: 70000, currentAppraisal: 135000, expectedSalePrice: 128500, finalSalePrice: 128500, status: "VENDIDO", purchaseDate: "2024-01-15", saleDate: "2024-09-15", links: [["Pietro", 35000], ["Rodrigo", 35000]] },
-    { name: "Ed Papaver", purchasePrice: 71404.20, currentAppraisal: 136800, expectedSalePrice: 127640, finalSalePrice: 127640, status: "VENDIDO", purchaseDate: "2025-01-15", saleDate: "2025-09-15", links: [["Izabela", 71404.20]] }
+    { name: "Ed Papaver", purchasePrice: 71404.20, currentAppraisal: 136800, expectedSalePrice: 127640, finalSalePrice: 127640, status: "VENDIDO", purchaseDate: "2025-01-15", saleDate: "2025-09-15", links: [["Pietro", 71404.20]] }
   ] as const;
   for (const item of properties) {
     const existing = await prisma.property.findFirst({ where: { name: item.name } });
