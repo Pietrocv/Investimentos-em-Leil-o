@@ -128,8 +128,8 @@ export function calculateDashboardSummary(properties: any[], user?: any) {
       totalCost: yearTotals.totals.totalCost,
       totalSold: yearTotals.totals.totalSold,
       expectedProfit: yearTotals.totals.expectedProfit,
-      finalProfit: yearTotals.totals.finalProfit,
-      averageProfitPercent: yearTotals.totals.totalCost > 0 ? yearTotals.totals.finalProfit / yearTotals.totals.totalCost : 0,
+      finalProfit: yearTotals.totals.totalSold - yearTotals.totals.totalCost,
+      averageProfitPercent: yearTotals.totals.totalCost > 0 ? (yearTotals.totals.totalSold - yearTotals.totals.totalCost) / yearTotals.totals.totalCost : 0,
       soldProperties: yearTotals.sold,
       activeProperties: items.length - yearTotals.sold
     };
@@ -148,6 +148,8 @@ export function calculateDashboardSummary(properties: any[], user?: any) {
     }, 0);
     return { year, profit };
   });
+  const userProfitTotal = userProfitByYear.reduce((sum, item) => sum + item.profit, 0);
+  const realizedProfit = totals.totalSold - totals.totalCost;
   return {
     totalProperties: properties.length,
     totalInvested: totals.totalInvested,
@@ -155,12 +157,13 @@ export function calculateDashboardSummary(properties: any[], user?: any) {
     totalCost: totals.totalCost,
     totalSold: totals.totalSold,
     expectedProfit: totals.expectedProfit,
-    finalProfit: totals.finalProfit,
-    averageProfitPercent: totals.totalCost > 0 ? totals.finalProfit / totals.totalCost : 0,
+    finalProfit: realizedProfit,
+    averageProfitPercent: totals.totalCost > 0 ? realizedProfit / totals.totalCost : 0,
     soldProperties: sold,
     activeProperties: properties.length - sold,
     years,
     userProfitByYear,
+    userProfitTotal,
     topProfitProperties: enriched.sort((a, b) => (b.summary.finalProfit || 0) - (a.summary.finalProfit || 0)).slice(0, 5).map(({ property, summary }) => ({ id: property.id, name: property.name, profit: summary.finalProfit })),
     pendingSaleProperties: properties.filter((p) => p.status !== "VENDIDO").map((p) => ({ id: p.id, name: p.name, status: p.status, expectedSalePrice: n(p.expectedSalePrice) }))
   };

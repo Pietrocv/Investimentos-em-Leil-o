@@ -26,11 +26,9 @@ export function DashboardPage() {
         <SummaryCard title="Total de imoveis investidos" value={s.totalProperties} />
         <SummaryCard title="Custos totais" value={brl(s.totalCost)} />
         <SummaryCard title="Vendas totais" value={brl(s.totalSold)} />
-        <SummaryCard title="Lucro real" value={brl(s.finalProfit)} />
+        <SummaryCard title="Lucro" value={brl(s.finalProfit)} />
+        <SummaryCard title="Lucro Pietro" value={brl(s.userProfitTotal)} />
         <SummaryCard title="Lucro medio" value={pct(s.averageProfitPercent)} />
-        <SummaryCard title="Total investido" value={brl(s.totalInvested)} />
-        <SummaryCard title="Custos extras" value={brl(s.totalExtraExpenses)} />
-        <SummaryCard title="Lucro previsto" value={brl(s.expectedProfit)} />
         <SummaryCard title="Vendidos" value={s.soldProperties} />
         <SummaryCard title="Em andamento" value={s.activeProperties} />
       </div>
