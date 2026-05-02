@@ -30,8 +30,8 @@ async function main() {
     { name: "Monte Siao I P 201", unit: "P 201", purchasePrice: 67068.27, currentAppraisal: 140000, finalSalePrice: 132000, status: "VENDIDO", purchaseDate: "2025-06-26", saleDate: "2025-10-26", links: [["Pietro", 67068.27]] },
     { name: "Monte Siao V N 201", unit: "N 201", purchasePrice: 76464.05, currentAppraisal: 132000, finalSalePrice: 110000, status: "VENDIDO", purchaseDate: "2025-07-14", saleDate: "2025-12-26", links: [["Pietro", 76464.05]] },
     { name: "Montana A15 01", unit: "A15 01", district: "Ypiranga", purchasePrice: 73400, currentAppraisal: 138000, finalSalePrice: 128270.28, status: "VENDIDO", purchaseDate: "2025-01-15", saleDate: "2025-09-15", links: [["Pietro", 25700, 35.01], ["Jeff", 36700, 50], ["Bia", 11000, 14.99]] },
-    { name: "Montana B13 01", unit: "B13 01", district: "Ypiranga", purchasePrice: 62819.40, currentAppraisal: 153000, status: "A_VENDA", purchaseDate: "2026-01-15", links: [["Pietro", 31409.70], ["Jeferson", 31409.70]] },
-    { name: "Recanto Jovens 02 A8", purchasePrice: 59444.27, currentAppraisal: 145000, status: "A_VENDA", purchaseDate: "2026-01-15", links: [["Bia", 59444.27]] },
+    { name: "Montana B13 01", unit: "B13 01", district: "Ypiranga", purchasePrice: 62819.40, currentAppraisal: 153000, status: "VENDIDO", purchaseDate: "2026-01-15", links: [["Pietro", 31409.70], ["Jeferson", 31409.70]] },
+    { name: "Recanto Jovens 02 A8", purchasePrice: 59444.27, currentAppraisal: 145000, status: "VENDIDO", purchaseDate: "2026-01-15", links: [["Bia", 59444.27]] },
     { name: "Lisboa Life", purchasePrice: 70000, currentAppraisal: 135000, finalSalePrice: 128500, status: "VENDIDO", purchaseDate: "2024-01-15", saleDate: "2024-09-15", links: [["Pietro", 35000], ["Rodrigo", 35000]] },
     { name: "Ed Papaver", purchasePrice: 71404.20, currentAppraisal: 136800, finalSalePrice: 127640, status: "VENDIDO", purchaseDate: "2025-01-15", saleDate: "2025-09-15", links: [["Pietro", 71404.20]] }
   ] as const;
