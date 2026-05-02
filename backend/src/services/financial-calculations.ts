@@ -112,6 +112,14 @@ export function calculateDashboardSummary(properties: any[], user?: any) {
     acc[year].push(property);
     return acc;
   }, {});
+
+  const calculateUserProfit = (items: any[]) => items.reduce((sum, property) => {
+    if (property.status !== "VENDIDO" || !property.finalSalePrice) return sum;
+    const investorReturn = calculateInvestorReturns(property).find((link: any) => matchesInvestorUser(link, user));
+    if (!investorReturn) return sum;
+    return sum + (investorReturn.finalReturn - investorReturn.totalInvestorCost);
+  }, 0);
+
   const years = Object.entries(yearGroups).map(([year, items]) => {
     const yearTotals = calculateTotals(items);
     return {
@@ -124,6 +132,7 @@ export function calculateDashboardSummary(properties: any[], user?: any) {
       totalSold: yearTotals.totals.totalSold,
       finalProfit: yearTotals.totals.finalProfit,
       averageProfitPercent: yearTotals.totals.soldCost > 0 ? yearTotals.totals.finalProfit / yearTotals.totals.soldCost : 0,
+      userProfit: calculateUserProfit(items),
       soldProperties: yearTotals.sold,
       activeProperties: items.length - yearTotals.sold,
       soldWithoutSaleValue: yearTotals.soldWithoutSaleValue.length
@@ -133,17 +142,8 @@ export function calculateDashboardSummary(properties: any[], user?: any) {
     if (b.year === "Sem ano") return -1;
     return Number(b.year) - Number(a.year);
   });
-  const userProfitByYear = years.map(({ year }) => {
-    const items = yearGroups[year] || [];
-    const profit = items.reduce((sum, property) => {
-      if (property.status !== "VENDIDO" || !property.finalSalePrice) return sum;
-      const investorReturn = calculateInvestorReturns(property).find((link: any) => matchesInvestorUser(link, user));
-      if (!investorReturn) return sum;
-      return sum + (investorReturn.finalReturn - investorReturn.totalInvestorCost);
-    }, 0);
-    return { year, profit };
-  });
-  const userProfitTotal = userProfitByYear.reduce((sum, item) => sum + item.profit, 0);
+  const userProfitByYear = years.map(({ year, userProfit }) => ({ year, profit: userProfit }));
+  const userProfitTotal = calculateUserProfit(properties);
   return {
     totalProperties: properties.length,
     totalInvested: totals.totalInvested,

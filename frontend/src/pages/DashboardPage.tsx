@@ -39,8 +39,8 @@ export function DashboardPage() {
   if (!s) return <p>Carregando dashboard...</p>;
 
   const selectedYearData = selectedYear === "TODOS" ? null : s.years.find((year: any) => year.year === selectedYear);
-  const selectedUserProfit = selectedYear === "TODOS" ? s.userProfitTotal : s.userProfitByYear.find((item: any) => item.year === selectedYear)?.profit || 0;
   const summary = selectedYearData || s;
+  const selectedUserProfit = selectedYear === "TODOS" ? s.userProfitTotal : summary.userProfit || 0;
 
   async function exportSpreadsheet() {
     const response = await api.get("/export/spreadsheet.csv", { responseType: "blob" });
@@ -80,7 +80,7 @@ export function DashboardPage() {
         <SummaryCard title="Custos totais" value={brl(summary.totalCost)} />
         <SummaryCard title="Vendas totais" value={brl(summary.totalSold)} />
         <SummaryCard title="Lucro vendido" value={brl(summary.finalProfit)} />
-        <SummaryCard title="Lucro Pietro" value={brl(selectedUserProfit)} />
+        <SummaryCard title="Lucro do usuario" value={brl(selectedUserProfit)} />
         <SummaryCard title="Lucro medio" value={pct(summary.averageProfitPercent)} />
         <SummaryCard title="Vendidos" value={summary.soldProperties} />
         <SummaryCard title="Em andamento" value={summary.activeProperties} />
