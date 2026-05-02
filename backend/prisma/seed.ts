@@ -28,6 +28,8 @@ async function main() {
     { name: "Ed Papaver", purchasePrice: 71404.20, currentAppraisal: 136800, expectedSalePrice: 127640, finalSalePrice: 127640, status: "VENDIDO", links: [["Izabela", 71404.20]] }
   ] as const;
   for (const item of properties) {
+    const existing = await prisma.property.findFirst({ where: { name: item.name } });
+    if (existing) continue;
     const property = await prisma.property.create({ data: { name: item.name, type: PropertyType.APARTAMENTO, status: item.status as PropertyStatus, purchasePrice: item.purchasePrice, currentAppraisal: item.currentAppraisal, expectedSalePrice: item.expectedSalePrice, finalSalePrice: "finalSalePrice" in item ? item.finalSalePrice : undefined, city: "Sete Lagoas", purchaseDate: new Date("2024-01-15"), saleDate: item.status === "VENDIDO" ? new Date("2024-09-15") : undefined, condominiumMonths: 3, condominiumMonthlyValue: 450, condominiumTotal: 1350, registryNumber: `MAT-${item.name.slice(0, 3).toUpperCase()}`, iptuNumber: `IPTU-${item.name.length}`, notes: "Registro criado pelo seed do MVP." } });
     for (const [description, category, amount] of expenseSets[item.name]) await prisma.expense.create({ data: { propertyId: property.id, description, category, amount, paymentDate: new Date("2024-03-10") } });
     for (const [name, contribution] of item.links) await prisma.propertyInvestor.create({ data: { propertyId: property.id, investorId: investors[name], initialContribution: contribution, splitType: SplitType.POR_APORTE } });
@@ -35,6 +37,7 @@ async function main() {
     const total = links.reduce((s, l) => s + Number(l.initialContribution), 0);
     for (const link of links) await prisma.propertyInvestor.update({ where: { id: link.id }, data: { ownershipPercent: total ? Number(link.initialContribution) / total * 100 : 0 } });
   }
-  await prisma.setting.create({ data: { cdiAnnualRate: 10.65, notes: "Configuracao inicial para comparacao futura com CDI." } });
+  const setting = await prisma.setting.findFirst();
+  if (!setting) await prisma.setting.create({ data: { cdiAnnualRate: 10.65, notes: "Configuracao inicial para comparacao futura com CDI." } });
 }
 main().finally(async () => prisma.$disconnect());
