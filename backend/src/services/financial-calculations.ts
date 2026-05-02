@@ -101,7 +101,7 @@ function calculateTotals(properties: any[]) {
     acc.totalInvested += item.summary.totalPurchase;
     acc.totalExtraExpenses += item.summary.totalExtraExpenses;
     acc.totalCost += item.summary.totalCost;
-    acc.totalSold += item.summary.finalSalePrice || 0;
+    acc.totalSold += item.summary.finalSalePrice || item.summary.expectedSalePrice || 0;
     acc.expectedProfit += item.summary.expectedProfit || 0;
     acc.finalProfit += item.summary.finalProfit || 0;
     return acc;
