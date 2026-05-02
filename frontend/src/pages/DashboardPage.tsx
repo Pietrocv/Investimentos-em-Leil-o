@@ -9,12 +9,17 @@ import { brl, pct } from "../lib/utils";
 
 export function DashboardPage() {
   const [s, setS] = useState<any>();
+  const [selectedYear, setSelectedYear] = useState("TODOS");
 
   useEffect(() => {
     api.get("/dashboard/summary").then((r) => setS(r.data));
   }, []);
 
   if (!s) return <p>Carregando dashboard...</p>;
+
+  const selectedYearData = selectedYear === "TODOS" ? null : s.years.find((year: any) => year.year === selectedYear);
+  const selectedUserProfit = selectedYear === "TODOS" ? s.userProfitTotal : s.userProfitByYear.find((item: any) => item.year === selectedYear)?.profit || 0;
+  const summary = selectedYearData || s;
 
   async function exportSpreadsheet() {
     const response = await api.get("/export/spreadsheet.csv", { responseType: "blob" });
@@ -33,22 +38,28 @@ export function DashboardPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold text-brand-navy">Dashboard</h1>
-          <p className="text-slate-600">Resumo consolidado dos imoveis de leilao por ano de compra.</p>
+          <p className="text-slate-600">Resumo consolidado dos imoveis de leilao.</p>
         </div>
-        <Button type="button" onClick={exportSpreadsheet}>
-          Exportar planilha
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <select className="h-10 rounded-md border border-white/10 bg-white/5 px-3" value={selectedYear} onChange={(event) => setSelectedYear(event.target.value)}>
+            <option value="TODOS">Todos os anos</option>
+            {s.years.map((year: any) => <option key={year.year} value={year.year}>{year.year}</option>)}
+          </select>
+          <Button type="button" onClick={exportSpreadsheet}>
+            Exportar planilha
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <SummaryCard title="Total de imoveis investidos" value={s.totalProperties} />
-        <SummaryCard title="Custos totais" value={brl(s.totalCost)} />
-        <SummaryCard title="Vendas totais" value={brl(s.totalSold)} />
-        <SummaryCard title="Lucro" value={brl(s.finalProfit)} />
-        <SummaryCard title="Lucro Pietro" value={brl(s.userProfitTotal)} />
-        <SummaryCard title="Lucro medio" value={pct(s.averageProfitPercent)} />
-        <SummaryCard title="Vendidos" value={s.soldProperties} />
-        <SummaryCard title="Em andamento" value={s.activeProperties} />
+        <SummaryCard title="Total de imoveis investidos" value={summary.totalProperties} />
+        <SummaryCard title="Custos totais" value={brl(summary.totalCost)} />
+        <SummaryCard title="Vendas totais" value={brl(summary.totalSold)} />
+        <SummaryCard title="Lucro" value={brl(summary.finalProfit)} />
+        <SummaryCard title="Lucro Pietro" value={brl(selectedUserProfit)} />
+        <SummaryCard title="Lucro medio" value={pct(summary.averageProfitPercent)} />
+        <SummaryCard title="Vendidos" value={summary.soldProperties} />
+        <SummaryCard title="Em andamento" value={summary.activeProperties} />
       </div>
 
       <Card>
@@ -71,7 +82,9 @@ export function DashboardPage() {
           <tbody>
             {s.years.map((year: any) => (
               <tr key={year.year}>
-                <Td className="font-semibold text-brand-navy">{year.year}</Td>
+                <Td className="font-semibold text-brand-navy">
+                  <button className="text-brand-green hover:underline" onClick={() => setSelectedYear(year.year)}>{year.year}</button>
+                </Td>
                 <Td>{year.totalProperties}</Td>
                 <Td>{brl(year.totalInvested)}</Td>
                 <Td>{brl(year.totalExtraExpenses)}</Td>
@@ -132,9 +145,8 @@ export function DashboardPage() {
               <tr>
                 <Th>Imovel</Th>
                 <Th>Status</Th>
-                <Th>Venda prevista</Th>
-              </tr>
-            </thead>
+            </tr>
+          </thead>
             <tbody>
               {s.pendingSaleProperties.map((p: any) => (
                 <tr key={p.id}>
@@ -144,7 +156,6 @@ export function DashboardPage() {
                     </Link>
                   </Td>
                   <Td>{p.status}</Td>
-                  <Td>{brl(p.expectedSalePrice)}</Td>
                 </tr>
               ))}
             </tbody>

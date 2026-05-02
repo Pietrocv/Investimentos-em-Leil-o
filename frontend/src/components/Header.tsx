@@ -15,7 +15,6 @@ export function Header() {
         <Link className="rounded-md border border-brand-green/15 px-3 py-1 text-brand-text/75" to="/dashboard">Dashboard</Link>
         <Link className="rounded-md border border-brand-green/15 px-3 py-1 text-brand-text/75" to="/properties">Imoveis</Link>
         <Link className="rounded-md border border-brand-green/15 px-3 py-1 text-brand-text/75" to="/investors">Investidores</Link>
-        <Link className="rounded-md border border-brand-green/15 px-3 py-1 text-brand-text/75" to="/settings">Configuracoes</Link>
       </nav>
     </header>
   );

@@ -82,6 +82,7 @@ model Property {
   city                       String?
   district                   String?
   address                    String?
+  isOccupied                 Boolean            @default(false)
   type                       PropertyType       @default(APARTAMENTO)
   status                     PropertyStatus     @default(EM_ANALISE)
   purchasePrice              Decimal            @db.Decimal(14, 2)
@@ -98,6 +99,7 @@ model Property {
   buyerCpf                   String?
   condominiumMonths          Int?
   condominiumMonthlyValue    Decimal?           @db.Decimal(14, 2)
+  condominiumOldDebt         Decimal?           @db.Decimal(14, 2)
   condominiumTotal           Decimal?           @db.Decimal(14, 2)
   condominiumLastPaidMonth   String?
   notes                      String?

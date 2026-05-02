@@ -17,17 +17,17 @@ const statuses = [
 
 const types = [
   ["APARTAMENTO", "Apartamento"],
-  ["CASA", "Casa"],
-  ["LOTE", "Lote"],
-  ["OUTRO", "Outro"]
+  ["CASA", "Casa"]
 ];
 
 export function PropertyForm({ initial, onSubmit }: { initial?: any; onSubmit: (data: any) => Promise<void> }) {
-  const [f, setF] = useState<any>({ name: "", type: "APARTAMENTO", status: "EM_ANALISE", purchasePrice: 0, ...initial });
+  const [f, setF] = useState<any>({ name: "", type: "APARTAMENTO", status: "EM_ANALISE", isOccupied: false, purchasePrice: 0, ...initial });
 
   useEffect(() => {
-    if (!f.condominiumTotal) setF((x: any) => ({ ...x, condominiumTotal: Number(x.condominiumMonths || 0) * Number(x.condominiumMonthlyValue || 0) }));
-  }, [f.condominiumMonths, f.condominiumMonthlyValue]);
+    const monthsTotal = Number(f.condominiumMonths || 0) * Number(f.condominiumMonthlyValue || 0);
+    const total = monthsTotal + Number(f.condominiumOldDebt || 0);
+    setF((current: any) => ({ ...current, condominiumTotal: total }));
+  }, [f.condominiumMonths, f.condominiumMonthlyValue, f.condominiumOldDebt]);
 
   const ch = (k: string, v: any) => setF((x: any) => ({ ...x, [k]: v }));
 
@@ -39,37 +39,40 @@ export function PropertyForm({ initial, onSubmit }: { initial?: any; onSubmit: (
         <Field label="Cidade"><Input value={f.city || ""} onChange={(e) => ch("city", e.target.value)} /></Field>
         <Field label="Bairro"><Input value={f.district || ""} onChange={(e) => ch("district", e.target.value)} /></Field>
         <Field label="Tipo do imovel">
-          <select className="h-10 rounded-md border px-3" value={f.type} onChange={(e) => ch("type", e.target.value)}>
+          <select className="h-10 rounded-md border border-white/10 bg-white/5 px-3" value={f.type} onChange={(e) => ch("type", e.target.value)}>
             {types.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
         </Field>
+        <Field label="Ocupacao">
+          <select className="h-10 rounded-md border border-white/10 bg-white/5 px-3" value={String(Boolean(f.isOccupied))} onChange={(e) => ch("isOccupied", e.target.value === "true")}>
+            <option value="false">Desocupado</option>
+            <option value="true">Ocupado</option>
+          </select>
+        </Field>
         <Field label="Status">
-          <select className="h-10 rounded-md border px-3" value={f.status} onChange={(e) => ch("status", e.target.value)}>
+          <select className="h-10 rounded-md border border-white/10 bg-white/5 px-3" value={f.status} onChange={(e) => ch("status", e.target.value)}>
             {statuses.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
         </Field>
       </FormSection>
 
-      <FormSection title="Valores principais">
+      <FormSection title="Valores e datas principais">
         <MoneyField label="Valor de compra" name="purchasePrice" form={f} onChange={ch} required />
         <MoneyField label="Avaliacao atual" name="currentAppraisal" form={f} onChange={ch} />
         <MoneyField label="Avaliacao antiga" name="oldAppraisal" form={f} onChange={ch} />
-        <MoneyField label="Venda prevista" name="expectedSalePrice" form={f} onChange={ch} />
         <MoneyField label="Venda realizada" name="finalSalePrice" form={f} onChange={ch} />
-      </FormSection>
-
-      <FormSection title="Condominio">
-        <Field label="Quantidade de meses"><Input type="number" value={f.condominiumMonths || ""} onChange={(e) => ch("condominiumMonths", e.target.value)} /></Field>
-        <MoneyField label="Valor mensal" name="condominiumMonthlyValue" form={f} onChange={ch} />
-        <MoneyField label="Total do condominio" name="condominiumTotal" form={f} onChange={ch} />
-        <Field label="Ultimo mes pago"><Input value={f.condominiumLastPaidMonth || ""} onChange={(e) => ch("condominiumLastPaidMonth", e.target.value)} /></Field>
-      </FormSection>
-
-      <FormSection title="Datas">
         <DateField label="Data da compra" name="purchaseDate" form={f} onChange={ch} />
         <DateField label="Data do laudo / avaliacao" name="appraisalDate" form={f} onChange={ch} />
         <DateField label="Data da venda" name="saleDate" form={f} onChange={ch} />
         <DateField label="Data de retorno" name="returnDate" form={f} onChange={ch} />
+      </FormSection>
+
+      <FormSection title="Condominio">
+        <Field label="Qtd. meses pagos"><Input type="number" min="0" value={f.condominiumMonths || ""} onChange={(e) => ch("condominiumMonths", e.target.value)} /></Field>
+        <MoneyField label="Valor do condominio" name="condominiumMonthlyValue" form={f} onChange={ch} />
+        <MoneyField label="Dividas antigas de condominio" name="condominiumOldDebt" form={f} onChange={ch} />
+        <MoneyField label="Condominio total" name="condominiumTotal" form={f} onChange={ch} />
+        <Field label="Ultimo mes pago"><Input value={f.condominiumLastPaidMonth || ""} onChange={(e) => ch("condominiumLastPaidMonth", e.target.value)} /></Field>
       </FormSection>
 
       <FormSection title="Documentos">
@@ -78,7 +81,6 @@ export function PropertyForm({ initial, onSubmit }: { initial?: any; onSubmit: (
         <Field label="CPF do comprador"><Input value={f.buyerCpf || ""} onChange={(e) => ch("buyerCpf", e.target.value)} /></Field>
       </FormSection>
 
-      <Field label="Endereco completo"><Input value={f.address || ""} onChange={(e) => ch("address", e.target.value)} /></Field>
       <Field label="Observacoes"><Textarea value={f.notes || ""} onChange={(e) => ch("notes", e.target.value)} /></Field>
       <Button className="w-fit">Salvar imovel</Button>
     </form>

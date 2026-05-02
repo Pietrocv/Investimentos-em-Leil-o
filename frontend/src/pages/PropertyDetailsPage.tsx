@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ExpenseForm } from "../components/ExpenseForm";
-import { InvestorPaymentForm } from "../components/InvestorPaymentForm";
 import { PropertyInvestorForm } from "../components/PropertyInvestorForm";
 import { SummaryCard } from "../components/SummaryCard";
 import { Badge } from "../components/ui/badge";
@@ -17,7 +16,6 @@ export function PropertyDetailsPage() {
   const [investors, setInvestors] = useState<any[]>([]);
   const [editingExpense, setEditingExpense] = useState<any>(null);
   const [editingInvestor, setEditingInvestor] = useState<any>(null);
-  const [editingPayment, setEditingPayment] = useState<any>(null);
   const load = () => api.get(`/properties/${id}`).then((r) => setP(r.data));
 
   useEffect(() => {
@@ -52,14 +50,13 @@ export function PropertyDetailsPage() {
         <SummaryCard title="Compra" value={brl(s.totalPurchase)} />
         <SummaryCard title="Avaliacao atual" value={brl(p.currentAppraisal)} />
         <SummaryCard title="Avaliacao antiga" value={brl(p.oldAppraisal)} />
-        <SummaryCard title="Venda prevista" value={brl(p.expectedSalePrice)} />
         <SummaryCard title="Venda realizada" value={brl(p.finalSalePrice)} />
         <SummaryCard title="Custos" value={brl(s.totalExtraExpenses)} />
         <SummaryCard title="Custo total" value={brl(s.totalCost)} />
-        <SummaryCard title="Lucro previsto" value={brl(s.expectedProfit)} />
         <SummaryCard title="Lucro realizado" value={brl(s.finalProfit)} />
         <SummaryCard title="% lucro" value={pct(s.finalProfitPercent)} />
         <SummaryCard title="Tempo" value={s.timeInMonths === null ? "Venda pendente" : `${s.timeInMonths} meses`} />
+        <SummaryCard title="Ocupacao" value={p.isOccupied ? "Ocupado" : "Desocupado"} />
       </div>
 
       <Card>
@@ -100,7 +97,7 @@ export function PropertyDetailsPage() {
             {p.expenses.map((e: any) => (
               <tr key={e.id}>
                 <Td>{e.description}</Td>
-                <Td>{e.category}</Td>
+                <Td>{categoryLabel(e.category)}</Td>
                 <Td>{brl(e.amount)}</Td>
                 <Td>{e.paidByInvestor?.name ? `100% para ${e.paidByInvestor.name}` : "Dividido entre investidores"}</Td>
                 <Td>
@@ -116,8 +113,8 @@ export function PropertyDetailsPage() {
       </Card>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <Cartorio title="Cartorio 1" items={cart("CARTORIO_1")} total={total(cart("CARTORIO_1"))} />
-        <Cartorio title="Cartorio 2" items={cart("CARTORIO_2")} total={total(cart("CARTORIO_2"))} />
+        <Documentacao title="Documentacao Compra" category="CARTORIO_1" items={cart("CARTORIO_1")} total={total(cart("CARTORIO_1"))} onAdd={async (data) => { await api.post(`/properties/${id}/expenses`, data); load(); }} />
+        <Documentacao title="Documentacao Venda" category="CARTORIO_2" items={cart("CARTORIO_2")} total={total(cart("CARTORIO_2"))} onAdd={async (data) => { await api.post(`/properties/${id}/expenses`, data); load(); }} />
       </div>
 
       <Card>
@@ -148,15 +145,12 @@ export function PropertyDetailsPage() {
           <thead>
             <tr>
               <Th>Nome</Th>
-              <Th>Aporte</Th>
+              <Th>Valor de compra</Th>
               <Th>% participacao</Th>
-              <Th>Custo dividido</Th>
-              <Th>Custo direto</Th>
+              <Th>% lucro</Th>
+              <Th>Custos extra</Th>
               <Th>Custo total individual</Th>
-              <Th>Retorno previsto</Th>
               <Th>Retorno realizado</Th>
-              <Th>Pago</Th>
-              <Th>Saldo</Th>
               <Th>Acoes</Th>
             </tr>
           </thead>
@@ -166,13 +160,10 @@ export function PropertyDetailsPage() {
                 <Td>{i.investor.name}</Td>
                 <Td>{brl(i.initialContribution)}</Td>
                 <Td>{Number(i.ownershipPercent).toFixed(2)}%</Td>
-                <Td>{brl(i.sharedExpenses)}</Td>
-                <Td>{brl(i.directExpenses)}</Td>
+                <Td>{Number(i.profitPercent).toFixed(2)}%</Td>
+                <Td>{brl(i.allocatedExpenses)}</Td>
                 <Td>{brl(i.totalInvestorCost)}</Td>
-                <Td>{brl(i.expectedReturn)}</Td>
                 <Td>{brl(i.finalReturn)}</Td>
-                <Td>{brl(i.amountAlreadyPaid)}</Td>
-                <Td>{brl(i.balanceToPay)}</Td>
                 <Td>
                   <div className="flex gap-2">
                     <button className="rounded-md border border-brand-green/25 px-3 py-1 text-xs text-brand-green hover:bg-brand-green/10" onClick={() => setEditingInvestor(p.investors.find((link: any) => link.id === i.id) || i)}>Editar</button>
@@ -185,64 +176,12 @@ export function PropertyDetailsPage() {
         </Table>
       </Card>
 
-      <Card>
-        <h2 className="mb-3 text-lg font-bold text-brand-navy">Registrar pagamento ao investidor</h2>
-        <InvestorPaymentForm links={p.investors} onSubmit={async (d) => { await api.post(`/properties/${id}/payments`, d); load(); }} />
-      </Card>
-
-      {editingPayment && (
-        <Card>
-          <h2 className="mb-3 text-lg font-bold text-brand-navy">Editar pagamento ao investidor</h2>
-          <InvestorPaymentForm
-            links={p.investors}
-            initial={editingPayment}
-            submitLabel="Salvar pagamento"
-            onCancel={() => setEditingPayment(null)}
-            onSubmit={async (d) => {
-              await api.patch(`/investor-payments/${editingPayment.id}`, d);
-              setEditingPayment(null);
-              load();
-            }}
-          />
-        </Card>
-      )}
-
-      <Card>
-        <h2 className="mb-3 text-lg font-bold text-brand-navy">Pagamentos aos investidores</h2>
-        <Table>
-          <thead>
-            <tr>
-              <Th>Investidor</Th>
-              <Th>Valor</Th>
-              <Th>Data</Th>
-              <Th>Descricao</Th>
-              <Th>Acoes</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {p.payments.map((pay: any) => (
-              <tr key={pay.id}>
-                <Td>{pay.investor.name}</Td>
-                <Td>{brl(pay.amount)}</Td>
-                <Td>{pay.paymentDate?.slice(0, 10)}</Td>
-                <Td>{pay.description}</Td>
-                <Td>
-                  <div className="flex gap-2">
-                    <button className="rounded-md border border-brand-green/25 px-3 py-1 text-xs text-brand-green hover:bg-brand-green/10" onClick={() => setEditingPayment(pay)}>Editar</button>
-                    <button className="rounded-md border border-red-400/25 px-3 py-1 text-xs text-red-200 hover:bg-red-500/10" onClick={async () => { if (confirm("Excluir este pagamento?")) { await api.delete(`/investor-payments/${pay.id}`); load(); } }}>Excluir</button>
-                  </div>
-                </Td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </Card>
-
       <div className="grid gap-4 xl:grid-cols-3">
         <Card>
           <h2 className="font-bold text-brand-navy">Condominio</h2>
-          <p>Meses: {p.condominiumMonths || 0}</p>
-          <p>Valor mensal: {brl(p.condominiumMonthlyValue)}</p>
+          <p>Meses pagos: {p.condominiumMonths || 0}</p>
+          <p>Valor do condominio: {brl(p.condominiumMonthlyValue)}</p>
+          <p>Dividas antigas: {brl(p.condominiumOldDebt)}</p>
           <p>Total: {brl(p.condominiumTotal)}</p>
           <p>Ultimo pago: {p.condominiumLastPaidMonth || "-"}</p>
         </Card>
@@ -269,12 +208,37 @@ export function PropertyDetailsPage() {
   );
 }
 
-function Cartorio({ title, items, total }: { title: string; items: any[]; total: number }) {
-  const previsto = total;
-  const realizado = total;
+function categoryLabel(category: string) {
+  const labels: Record<string, string> = {
+    CARTORIO_1: "Documentacao Compra",
+    CARTORIO_2: "Documentacao Venda"
+  };
+  return labels[category] || category;
+}
+
+const documentationItems = ["Registro", "ITBI", "Escritura", "Taxa a vista", "Produto", "Matricula + Onus", "Abono", "Certidao"];
+
+function Documentacao({ title, category, items, total, onAdd }: { title: string; category: string; items: any[]; total: number; onAdd: (data: any) => Promise<void> }) {
+  const [description, setDescription] = useState(documentationItems[0]);
+  const [amount, setAmount] = useState("");
   return (
     <Card>
       <h2 className="mb-3 text-lg font-bold text-brand-navy">{title}</h2>
+      <form
+        className="mb-4 grid gap-3 md:grid-cols-[1fr_160px_auto]"
+        onSubmit={async (event) => {
+          event.preventDefault();
+          await onAdd({ description, category, amount });
+          setDescription(documentationItems[0]);
+          setAmount("");
+        }}
+      >
+        <select className="h-10 rounded-md border border-white/10 bg-white/5 px-3" value={description} onChange={(event) => setDescription(event.target.value)}>
+          {documentationItems.map((item) => <option key={item} value={item}>{item}</option>)}
+        </select>
+        <input required className="h-10 rounded-md border border-white/10 bg-white/5 px-3" type="number" step="0.01" placeholder="Valor" value={amount} onChange={(event) => setAmount(event.target.value)} />
+        <Button>Adicionar</Button>
+      </form>
       <Table>
         <thead>
           <tr>
@@ -299,9 +263,9 @@ function Cartorio({ title, items, total }: { title: string; items: any[]; total:
         </tbody>
       </Table>
       <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
-        <span>Total previsto: <b>{brl(previsto)}</b></span>
-        <span>Total realizado: <b>{brl(realizado)}</b></span>
-        <span>Diferenca: <b>{brl(previsto - realizado)}</b></span>
+        <span>Total: <b>{brl(total)}</b></span>
+        <span>Vai para custos: <b>Sim</b></span>
+        <span>Itens: <b>{items.length}</b></span>
       </div>
     </Card>
   );

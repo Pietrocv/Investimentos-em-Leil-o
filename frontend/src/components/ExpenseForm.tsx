@@ -6,8 +6,8 @@ import { Textarea } from "./ui/textarea";
 
 const categories = [
   ["COMPRA", "Compra"],
-  ["CARTORIO_1", "Cartorio 1"],
-  ["CARTORIO_2", "Cartorio 2"],
+  ["CARTORIO_1", "Documentacao Compra"],
+  ["CARTORIO_2", "Documentacao Venda"],
   ["REFORMA", "Reforma"],
   ["MATERIAL", "Material"],
   ["MAO_DE_OBRA", "Mao de obra"],
@@ -55,7 +55,7 @@ export function ExpenseForm({ investors = [], initial, submitLabel = "Adicionar 
         </select>
       </Field>
       <Field label="Valor"><Input required type="number" step="0.01" value={f.amount} onChange={(e) => ch("amount", e.target.value)} /></Field>
-      <Field label="Pago por">
+      <Field label="Aplicacao do custo">
         <select className="h-10 rounded-md border px-3" value={f.paidByInvestorId} onChange={(e) => ch("paidByInvestorId", e.target.value)}>
           <option value="">Geral / dividido</option>
           {investors.map((i: any) => <option key={i.investorId} value={i.investorId}>{i.investor?.name}</option>)}

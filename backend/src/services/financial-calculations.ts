@@ -38,21 +38,15 @@ export function calculatePropertySummary(property: any) {
   const totalPurchase = n(property.purchasePrice);
   const totalExtraExpenses = (property.expenses || []).reduce((sum: number, expense: any) => sum + n(expense.amount), 0);
   const totalCost = totalPurchase + totalExtraExpenses;
-  const expectedSale = n(property.expectedSalePrice);
   const finalSale = n(property.finalSalePrice);
-  const expectedProfit = expectedSale ? expectedSale - totalCost : null;
-  const finalProfit = finalSale ? finalSale - totalCost : expectedProfit;
-  const expectedProfitPercent = expectedProfit !== null && totalCost > 0 ? expectedProfit / totalCost : null;
+  const finalProfit = finalSale ? finalSale - totalCost : null;
   const finalProfitPercent = finalProfit !== null && totalCost > 0 ? finalProfit / totalCost : null;
   return {
     totalPurchase,
     totalExtraExpenses,
     totalCost,
-    expectedSalePrice: expectedSale || null,
     finalSalePrice: finalSale || null,
-    expectedProfit,
     finalProfit,
-    expectedProfitPercent,
     finalProfitPercent,
     timeInMonths: calculateMonthsBetweenDates(property.purchaseDate, property.saleDate),
     saleStatus: property.saleDate ? "Vendido" : "Venda pendente"
@@ -71,23 +65,19 @@ export function calculateInvestorReturns(property: any) {
     const directExpenses = expenses.filter((expense: any) => expense.paidByInvestorId === link.investorId).reduce((sum: number, expense: any) => sum + n(expense.amount), 0);
     const allocatedExpenses = sharedExpenses + directExpenses;
     const totalInvestorCost = n(link.initialContribution) + allocatedExpenses;
-    const expectedProfit = summary.expectedProfit ?? 0;
-    const finalProfit = summary.finalProfit ?? expectedProfit;
-    const investorExpectedProfit = expectedProfit * ownershipPercent;
+    const finalProfit = summary.finalProfit ?? 0;
     const investorFinalProfit = finalProfit * ownershipPercent;
-    const investorExpectedReturn = totalInvestorCost + investorExpectedProfit;
     const investorFinalReturn = totalInvestorCost + investorFinalProfit;
     const amountAlreadyPaid = payments.filter((p: any) => p.investorId === link.investorId).reduce((sum: number, p: any) => sum + n(p.amount), 0);
     const balanceToPay = investorFinalReturn - amountAlreadyPaid;
     return {
       ...link,
       ownershipPercent: ownershipPercent * 100,
-      profitPercent: link.profitPercent ? n(link.profitPercent) : ownershipPercent * 100,
+      profitPercent: ownershipPercent * 100,
       sharedExpenses,
       directExpenses,
       allocatedExpenses,
       totalInvestorCost,
-      expectedReturn: investorExpectedReturn,
       finalReturn: investorFinalReturn,
       amountAlreadyPaid,
       balanceToPay
@@ -101,11 +91,10 @@ function calculateTotals(properties: any[]) {
     acc.totalInvested += item.summary.totalPurchase;
     acc.totalExtraExpenses += item.summary.totalExtraExpenses;
     acc.totalCost += item.summary.totalCost;
-    acc.totalSold += item.summary.finalSalePrice || item.summary.expectedSalePrice || 0;
-    acc.expectedProfit += item.summary.expectedProfit || 0;
+    acc.totalSold += item.summary.finalSalePrice || 0;
     acc.finalProfit += item.summary.finalProfit || 0;
     return acc;
-  }, { totalInvested: 0, totalExtraExpenses: 0, totalCost: 0, totalSold: 0, expectedProfit: 0, finalProfit: 0 });
+  }, { totalInvested: 0, totalExtraExpenses: 0, totalCost: 0, totalSold: 0, finalProfit: 0 });
   const sold = properties.filter((p) => p.status === "VENDIDO").length;
   return { enriched, totals, sold };
 }
@@ -127,7 +116,6 @@ export function calculateDashboardSummary(properties: any[], user?: any) {
       totalExtraExpenses: yearTotals.totals.totalExtraExpenses,
       totalCost: yearTotals.totals.totalCost,
       totalSold: yearTotals.totals.totalSold,
-      expectedProfit: yearTotals.totals.expectedProfit,
       finalProfit: yearTotals.totals.totalSold - yearTotals.totals.totalCost,
       averageProfitPercent: yearTotals.totals.totalCost > 0 ? (yearTotals.totals.totalSold - yearTotals.totals.totalCost) / yearTotals.totals.totalCost : 0,
       soldProperties: yearTotals.sold,
@@ -156,7 +144,6 @@ export function calculateDashboardSummary(properties: any[], user?: any) {
     totalExtraExpenses: totals.totalExtraExpenses,
     totalCost: totals.totalCost,
     totalSold: totals.totalSold,
-    expectedProfit: totals.expectedProfit,
     finalProfit: realizedProfit,
     averageProfitPercent: totals.totalCost > 0 ? realizedProfit / totals.totalCost : 0,
     soldProperties: sold,
@@ -165,6 +152,6 @@ export function calculateDashboardSummary(properties: any[], user?: any) {
     userProfitByYear,
     userProfitTotal,
     topProfitProperties: enriched.sort((a, b) => (b.summary.finalProfit || 0) - (a.summary.finalProfit || 0)).slice(0, 5).map(({ property, summary }) => ({ id: property.id, name: property.name, profit: summary.finalProfit })),
-    pendingSaleProperties: properties.filter((p) => p.status !== "VENDIDO").map((p) => ({ id: p.id, name: p.name, status: p.status, expectedSalePrice: n(p.expectedSalePrice) }))
+    pendingSaleProperties: properties.filter((p) => p.status !== "VENDIDO").map((p) => ({ id: p.id, name: p.name, status: p.status }))
   };
 }

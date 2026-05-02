@@ -17,7 +17,6 @@ export function PropertyInvestorForm({ investors, initial, submitLabel = "Adicio
     initialContribution: "",
     splitType: "POR_APORTE",
     ownershipPercent: "",
-    profitPercent: "",
     notes: ""
   });
 
@@ -28,7 +27,6 @@ export function PropertyInvestorForm({ investors, initial, submitLabel = "Adicio
       initialContribution: String(initial.initialContribution ?? ""),
       splitType: initial.splitType || "POR_APORTE",
       ownershipPercent: String(initial.ownershipPercent ?? ""),
-      profitPercent: String(initial.profitPercent ?? ""),
       notes: initial.notes || ""
     });
   }, [initial]);
@@ -42,11 +40,10 @@ export function PropertyInvestorForm({ investors, initial, submitLabel = "Adicio
         event.preventDefault();
         await onSubmit({
           ...form,
-          ownershipPercent: form.ownershipPercent || undefined,
-          profitPercent: form.profitPercent || undefined
+          ownershipPercent: form.ownershipPercent || undefined
         });
         if (!initial) {
-          setForm({ investorId: "", initialContribution: "", splitType: "POR_APORTE", ownershipPercent: "", profitPercent: "", notes: "" });
+          setForm({ investorId: "", initialContribution: "", splitType: "POR_APORTE", ownershipPercent: "", notes: "" });
         }
       }}
     >
@@ -63,7 +60,7 @@ export function PropertyInvestorForm({ investors, initial, submitLabel = "Adicio
       </label>
 
       <label className="grid gap-1">
-        <Label>Aporte inicial</Label>
+        <Label>Valor de compra</Label>
         <Input required type="number" step="0.01" value={form.initialContribution} onChange={(event) => change("initialContribution", event.target.value)} />
       </label>
 
@@ -78,11 +75,6 @@ export function PropertyInvestorForm({ investors, initial, submitLabel = "Adicio
       <label className="grid gap-1">
         <Label>Participacao (%)</Label>
         <Input type="number" step="0.01" min="0" max="100" value={form.ownershipPercent} onChange={(event) => change("ownershipPercent", event.target.value)} />
-      </label>
-
-      <label className="grid gap-1">
-        <Label>Lucro (%)</Label>
-        <Input type="number" step="0.01" min="0" max="100" value={form.profitPercent} onChange={(event) => change("profitPercent", event.target.value)} />
       </label>
 
       <label className="grid gap-1 md:col-span-3">

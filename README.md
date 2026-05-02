@@ -1,6 +1,6 @@
 # Investindo com Leilao
 
-Sistema web para controlar investimentos em imoveis adquiridos em leilao, substituindo planilhas com abas por imovel. O MVP cobre cadastro de imoveis, custos, cartorios, investidores, aportes, pagamentos, vendas e calculos automaticos de lucro e retorno.
+Sistema web para controlar investimentos em imoveis adquiridos em leilao, substituindo planilhas com abas por imovel. O MVP cobre cadastro de imoveis, custos, documentacao de compra e venda, investidores, vendas e calculos automaticos de lucro real e retorno.
 
 ## Funcionalidades
 
@@ -8,12 +8,10 @@ Sistema web para controlar investimentos em imoveis adquiridos em leilao, substi
 - Dashboard com totais financeiros, imoveis vendidos, imoveis em andamento, top 5 por lucro e vendas pendentes.
 - CRUD de imoveis.
 - CRUD de investidores.
-- Custos ilimitados por imovel, incluindo Cartorio 1 e Cartorio 2 por categoria.
+- Custos ilimitados por imovel, incluindo Documentacao Compra e Documentacao Venda por categoria.
 - Multiplos investidores por imovel via `PropertyInvestor`.
-- Pagamentos aos investidores via `InvestorPayment`.
 - Calculos financeiros centralizados no backend.
 - Exportacao CSV autenticada para levar os dados consolidados de volta para planilha.
-- Configuracoes com CDI anual para uso futuro.
 - Docker Compose com PostgreSQL, backend e frontend.
 
 ## Stack
@@ -166,18 +164,6 @@ Investidores por imovel:
 - `POST /properties/:propertyId/investors`
 - `PATCH /property-investors/:id`
 - `DELETE /property-investors/:id`
-
-Pagamentos:
-
-- `GET /properties/:propertyId/payments`
-- `POST /properties/:propertyId/payments`
-- `PATCH /investor-payments/:id`
-- `DELETE /investor-payments/:id`
-
-Configuracoes:
-
-- `GET /settings`
-- `PATCH /settings`
 
 Exportacao:
 

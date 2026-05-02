@@ -25,7 +25,7 @@ export async function exportRoutes(app: FastifyInstance) {
 
     const lines: string[] = [];
     lines.push(row(["IMOVEIS"]));
-    lines.push(row(["Nome", "Unidade", "Cidade", "Bairro", "Tipo", "Status", "Compra", "Custos", "Custo total", "Venda prevista", "Venda realizada", "Lucro", "Data compra", "Data venda"]));
+    lines.push(row(["Nome", "Unidade", "Cidade", "Bairro", "Ocupacao", "Tipo", "Status", "Compra", "Custos", "Custo total", "Venda realizada", "Lucro", "Data compra", "Data venda"]));
     for (const property of properties) {
       const summary = calculatePropertySummary(property);
       lines.push(row([
@@ -33,12 +33,12 @@ export async function exportRoutes(app: FastifyInstance) {
         property.unit,
         property.city,
         property.district,
+        property.isOccupied ? "Ocupado" : "Desocupado",
         property.type,
         property.status,
         summary.totalPurchase,
         summary.totalExtraExpenses,
         summary.totalCost,
-        property.expectedSalePrice,
         property.finalSalePrice,
         summary.finalProfit,
         property.purchaseDate?.toISOString().slice(0, 10),
@@ -57,19 +57,10 @@ export async function exportRoutes(app: FastifyInstance) {
 
     lines.push("");
     lines.push(row(["INVESTIDORES POR IMOVEL"]));
-    lines.push(row(["Imovel", "Investidor", "Aporte", "% Participacao", "Custo dividido", "Custo direto", "Custo total individual", "Retorno previsto", "Retorno realizado", "Pago", "Saldo"]));
+    lines.push(row(["Imovel", "Investidor", "Valor de compra", "% Participacao", "% Lucro", "Custos extra", "Custo total individual", "Retorno realizado"]));
     for (const property of properties) {
       for (const investor of calculateInvestorReturns(property)) {
-        lines.push(row([property.name, investor.investor?.name, investor.initialContribution, investor.ownershipPercent, investor.sharedExpenses, investor.directExpenses, investor.totalInvestorCost, investor.expectedReturn, investor.finalReturn, investor.amountAlreadyPaid, investor.balanceToPay]));
-      }
-    }
-
-    lines.push("");
-    lines.push(row(["PAGAMENTOS"]));
-    lines.push(row(["Imovel", "Investidor", "Valor", "Data", "Descricao"]));
-    for (const property of properties) {
-      for (const payment of property.payments) {
-        lines.push(row([property.name, payment.investor.name, payment.amount, payment.paymentDate?.toISOString().slice(0, 10), payment.description]));
+        lines.push(row([property.name, investor.investor?.name, investor.initialContribution, investor.ownershipPercent, investor.profitPercent, investor.allocatedExpenses, investor.totalInvestorCost, investor.finalReturn]));
       }
     }
 

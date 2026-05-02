@@ -58,6 +58,7 @@ export function PropertiesPage() {
               <tr>
                 <Th>Nome</Th>
                 <Th>Status</Th>
+                <Th>Ocupacao</Th>
                 <Th>Compra</Th>
                 <Th>Avaliacao</Th>
                 <Th>Venda</Th>
@@ -72,9 +73,10 @@ export function PropertiesPage() {
                     </Link>
                   </Td>
                   <Td><Badge>{p.status}</Badge></Td>
+                  <Td>{p.isOccupied ? "Ocupado" : "Desocupado"}</Td>
                   <Td>{brl(p.purchasePrice)}</Td>
                   <Td>{brl(p.currentAppraisal)}</Td>
-                  <Td>{brl(p.finalSalePrice || p.expectedSalePrice)}</Td>
+                  <Td>{brl(p.finalSalePrice)}</Td>
                 </tr>
               ))}
             </tbody>

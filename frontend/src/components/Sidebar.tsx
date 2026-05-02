@@ -1,4 +1,4 @@
-import { Building2, LayoutDashboard, LogOut, Settings, Users } from "lucide-react";
+import { Building2, LayoutDashboard, LogOut, Users } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import logo from "../assets/logo.svg";
@@ -6,8 +6,7 @@ import logo from "../assets/logo.svg";
 const links = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/properties", label: "Imoveis", icon: Building2 },
-  { to: "/investors", label: "Investidores", icon: Users },
-  { to: "/settings", label: "Configuracoes", icon: Settings }
+  { to: "/investors", label: "Investidores", icon: Users }
 ];
 
 export function Sidebar() {
