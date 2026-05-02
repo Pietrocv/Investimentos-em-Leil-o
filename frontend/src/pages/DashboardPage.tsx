@@ -79,7 +79,7 @@ export function DashboardPage() {
         <SummaryCard title="Total de imoveis investidos" value={summary.totalProperties} />
         <SummaryCard title="Custos totais" value={brl(summary.totalCost)} />
         <SummaryCard title="Vendas totais" value={brl(summary.totalSold)} />
-        <SummaryCard title="Lucro" value={brl(summary.finalProfit)} />
+        <SummaryCard title="Lucro vendido" value={brl(summary.finalProfit)} />
         <SummaryCard title="Lucro Pietro" value={brl(selectedUserProfit)} />
         <SummaryCard title="Lucro medio" value={pct(summary.averageProfitPercent)} />
         <SummaryCard title="Vendidos" value={summary.soldProperties} />
@@ -104,8 +104,9 @@ export function DashboardPage() {
               <Th>Investido</Th>
               <Th>Custos</Th>
               <Th>Custo geral</Th>
+              <Th>Custo vendido</Th>
               <Th>Vendido</Th>
-              <Th>Lucro realizado</Th>
+              <Th>Lucro vendido</Th>
               <Th>Lucro medio</Th>
               <Th>Vendidos</Th>
               <Th>Em andamento</Th>
@@ -121,6 +122,7 @@ export function DashboardPage() {
                 <Td>{brl(year.totalInvested)}</Td>
                 <Td>{brl(year.totalExtraExpenses)}</Td>
                 <Td>{brl(year.totalCost)}</Td>
+                <Td>{brl(year.soldCost)}</Td>
                 <Td>{brl(year.totalSold)}</Td>
                 <Td>{brl(year.finalProfit)}</Td>
                 <Td>{pct(year.averageProfitPercent)}</Td>

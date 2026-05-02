@@ -39,17 +39,18 @@ export function calculatePropertySummary(property: any) {
   const totalExtraExpenses = (property.expenses || []).reduce((sum: number, expense: any) => sum + n(expense.amount), 0);
   const totalCost = totalPurchase + totalExtraExpenses;
   const finalSale = n(property.finalSalePrice);
-  const finalProfit = finalSale ? finalSale - totalCost : null;
+  const isSold = property.status === "VENDIDO";
+  const finalProfit = isSold && finalSale ? finalSale - totalCost : null;
   const finalProfitPercent = finalProfit !== null && totalCost > 0 ? finalProfit / totalCost : null;
   return {
     totalPurchase,
     totalExtraExpenses,
     totalCost,
-    finalSalePrice: finalSale || null,
+    finalSalePrice: isSold && finalSale ? finalSale : null,
     finalProfit,
     finalProfitPercent,
     timeInMonths: calculateMonthsBetweenDates(property.purchaseDate, property.saleDate),
-    saleStatus: property.saleDate ? "Vendido" : "Venda pendente"
+    saleStatus: isSold ? "Vendido" : "Vendendo"
   };
 }
 
@@ -91,10 +92,13 @@ function calculateTotals(properties: any[]) {
     acc.totalInvested += item.summary.totalPurchase;
     acc.totalExtraExpenses += item.summary.totalExtraExpenses;
     acc.totalCost += item.summary.totalCost;
-    acc.totalSold += item.summary.finalSalePrice || 0;
-    acc.finalProfit += item.summary.finalProfit || 0;
+    if (item.property.status === "VENDIDO" && item.summary.finalSalePrice) {
+      acc.soldCost += item.summary.totalCost;
+      acc.totalSold += item.summary.finalSalePrice;
+      acc.finalProfit += item.summary.finalProfit || 0;
+    }
     return acc;
-  }, { totalInvested: 0, totalExtraExpenses: 0, totalCost: 0, totalSold: 0, finalProfit: 0 });
+  }, { totalInvested: 0, totalExtraExpenses: 0, totalCost: 0, soldCost: 0, totalSold: 0, finalProfit: 0 });
   const sold = properties.filter((p) => p.status === "VENDIDO").length;
   const soldWithoutSaleValue = properties.filter((p) => p.status === "VENDIDO" && !n(p.finalSalePrice));
   return { enriched, totals, sold, soldWithoutSaleValue };
@@ -116,9 +120,10 @@ export function calculateDashboardSummary(properties: any[], user?: any) {
       totalInvested: yearTotals.totals.totalInvested,
       totalExtraExpenses: yearTotals.totals.totalExtraExpenses,
       totalCost: yearTotals.totals.totalCost,
+      soldCost: yearTotals.totals.soldCost,
       totalSold: yearTotals.totals.totalSold,
-      finalProfit: yearTotals.totals.totalSold - yearTotals.totals.totalCost,
-      averageProfitPercent: yearTotals.totals.totalCost > 0 ? (yearTotals.totals.totalSold - yearTotals.totals.totalCost) / yearTotals.totals.totalCost : 0,
+      finalProfit: yearTotals.totals.finalProfit,
+      averageProfitPercent: yearTotals.totals.soldCost > 0 ? yearTotals.totals.finalProfit / yearTotals.totals.soldCost : 0,
       soldProperties: yearTotals.sold,
       activeProperties: items.length - yearTotals.sold,
       soldWithoutSaleValue: yearTotals.soldWithoutSaleValue.length
@@ -131,7 +136,7 @@ export function calculateDashboardSummary(properties: any[], user?: any) {
   const userProfitByYear = years.map(({ year }) => {
     const items = yearGroups[year] || [];
     const profit = items.reduce((sum, property) => {
-      if (!property.finalSalePrice) return sum;
+      if (property.status !== "VENDIDO" || !property.finalSalePrice) return sum;
       const investorReturn = calculateInvestorReturns(property).find((link: any) => matchesInvestorUser(link, user));
       if (!investorReturn) return sum;
       return sum + (investorReturn.finalReturn - investorReturn.totalInvestorCost);
@@ -139,15 +144,15 @@ export function calculateDashboardSummary(properties: any[], user?: any) {
     return { year, profit };
   });
   const userProfitTotal = userProfitByYear.reduce((sum, item) => sum + item.profit, 0);
-  const realizedProfit = totals.totalSold - totals.totalCost;
   return {
     totalProperties: properties.length,
     totalInvested: totals.totalInvested,
     totalExtraExpenses: totals.totalExtraExpenses,
     totalCost: totals.totalCost,
+    soldCost: totals.soldCost,
     totalSold: totals.totalSold,
-    finalProfit: realizedProfit,
-    averageProfitPercent: totals.totalCost > 0 ? realizedProfit / totals.totalCost : 0,
+    finalProfit: totals.finalProfit,
+    averageProfitPercent: totals.soldCost > 0 ? totals.finalProfit / totals.soldCost : 0,
     soldProperties: sold,
     activeProperties: properties.length - sold,
     soldWithoutSaleValue: soldWithoutSaleValue.length,
