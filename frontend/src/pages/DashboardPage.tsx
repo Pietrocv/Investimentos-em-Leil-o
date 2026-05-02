@@ -23,11 +23,11 @@ export function DashboardPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <SummaryCard title="Total de imoveis investidos" value={s.totalProperties} />
         <SummaryCard title="Custos totais" value={brl(s.totalCost)} />
         <SummaryCard title="Vendas totais" value={brl(s.totalSold)} />
         <SummaryCard title="Lucro real" value={brl(s.finalProfit)} />
         <SummaryCard title="Lucro medio" value={pct(s.averageProfitPercent)} />
-        <SummaryCard title="Imoveis" value={s.totalProperties} />
         <SummaryCard title="Total investido" value={brl(s.totalInvested)} />
         <SummaryCard title="Custos extras" value={brl(s.totalExtraExpenses)} />
         <SummaryCard title="Lucro previsto" value={brl(s.expectedProfit)} />
