@@ -1,2 +1,2 @@
 import { Card, CardTitle } from "./ui/card";
-export function SummaryCard({ title, value }: { title: string; value: React.ReactNode }) { return <Card><CardTitle>{title}</CardTitle><div className="mt-2 text-2xl font-bold text-brand-navy">{value}</div></Card>; }
+export function SummaryCard({ title, value }: { title: string; value: React.ReactNode }) { return <Card className="before:absolute before:inset-y-0 before:left-0 before:w-24 before:-translate-x-full before:bg-gradient-to-r before:from-transparent before:via-white/8 before:to-transparent before:opacity-0 hover:before:animate-shimmer hover:before:opacity-100"><CardTitle>{title}</CardTitle><div className="mt-2 text-2xl font-bold text-brand-text">{value}</div></Card>; }

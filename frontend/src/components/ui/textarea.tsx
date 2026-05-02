@@ -1,2 +1,2 @@
 import { TextareaHTMLAttributes } from "react"; import { cn } from "../../lib/utils";
-export const Textarea = ({ className, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) => <textarea className={cn("min-h-24 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand-green focus:ring-2 focus:ring-emerald-100", className)} {...props} />;
+export const Textarea = ({ className, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) => <textarea className={cn("min-h-24 w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-brand-text outline-none placeholder:text-white/35 focus:border-brand-green focus:ring-2 focus:ring-emerald-100", className)} {...props} />;
