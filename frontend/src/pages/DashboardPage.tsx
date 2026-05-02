@@ -84,7 +84,15 @@ export function DashboardPage() {
         <SummaryCard title="Lucro medio" value={pct(summary.averageProfitPercent)} />
         <SummaryCard title="Vendidos" value={summary.soldProperties} />
         <SummaryCard title="Em andamento" value={summary.activeProperties} />
+        {summary.soldWithoutSaleValue > 0 && <SummaryCard title="Vendidos sem valor" value={summary.soldWithoutSaleValue} />}
       </div>
+
+      {summary.soldWithoutSaleValue > 0 && (
+        <Card className="border-brand-gold/50 bg-brand-gold/10">
+          <h2 className="mb-2 text-lg font-bold text-brand-gold">Imoveis vendidos sem valor de venda</h2>
+          <p className="text-sm text-brand-text/75">Preencha a Venda realizada desses imoveis para o lucro ficar fechado.</p>
+        </Card>
+      )}
 
       <Card>
         <h2 className="mb-3 text-lg font-bold text-brand-navy">Imoveis por ano</h2>

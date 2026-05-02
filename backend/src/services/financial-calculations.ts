@@ -96,11 +96,12 @@ function calculateTotals(properties: any[]) {
     return acc;
   }, { totalInvested: 0, totalExtraExpenses: 0, totalCost: 0, totalSold: 0, finalProfit: 0 });
   const sold = properties.filter((p) => p.status === "VENDIDO").length;
-  return { enriched, totals, sold };
+  const soldWithoutSaleValue = properties.filter((p) => p.status === "VENDIDO" && !n(p.finalSalePrice));
+  return { enriched, totals, sold, soldWithoutSaleValue };
 }
 
 export function calculateDashboardSummary(properties: any[], user?: any) {
-  const { enriched, totals, sold } = calculateTotals(properties);
+  const { enriched, totals, sold, soldWithoutSaleValue } = calculateTotals(properties);
   const yearGroups = properties.reduce<Record<string, any[]>>((acc, property) => {
     const year = String(getPropertyYear(property));
     acc[year] = acc[year] || [];
@@ -119,7 +120,8 @@ export function calculateDashboardSummary(properties: any[], user?: any) {
       finalProfit: yearTotals.totals.totalSold - yearTotals.totals.totalCost,
       averageProfitPercent: yearTotals.totals.totalCost > 0 ? (yearTotals.totals.totalSold - yearTotals.totals.totalCost) / yearTotals.totals.totalCost : 0,
       soldProperties: yearTotals.sold,
-      activeProperties: items.length - yearTotals.sold
+      activeProperties: items.length - yearTotals.sold,
+      soldWithoutSaleValue: yearTotals.soldWithoutSaleValue.length
     };
   }).sort((a, b) => {
     if (a.year === "Sem ano") return 1;
@@ -148,6 +150,8 @@ export function calculateDashboardSummary(properties: any[], user?: any) {
     averageProfitPercent: totals.totalCost > 0 ? realizedProfit / totals.totalCost : 0,
     soldProperties: sold,
     activeProperties: properties.length - sold,
+    soldWithoutSaleValue: soldWithoutSaleValue.length,
+    soldWithoutSaleValueProperties: soldWithoutSaleValue.map((p) => ({ id: p.id, name: p.name, status: p.status })),
     years,
     userProfitByYear,
     userProfitTotal,
