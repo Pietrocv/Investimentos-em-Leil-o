@@ -1,3 +1,233 @@
-import { useEffect, useState } from "react"; import { Link, useParams } from "react-router-dom"; import { ExpenseForm } from "../components/ExpenseForm"; import { InvestorPaymentForm } from "../components/InvestorPaymentForm"; import { PropertyInvestorForm } from "../components/PropertyInvestorForm"; import { SummaryCard } from "../components/SummaryCard"; import { Badge } from "../components/ui/badge"; import { Button } from "../components/ui/button"; import { Card } from "../components/ui/card"; import { Table, Td, Th } from "../components/ui/table"; import { api } from "../lib/api"; import { brl, pct } from "../lib/utils";
-export function PropertyDetailsPage(){const{id}=useParams(); const[p,setP]=useState<any>(); const[investors,setInvestors]=useState<any[]>([]); const load=()=>api.get(`/properties/${id}`).then(r=>setP(r.data)); useEffect(()=>{load(); api.get('/investors').then(r=>setInvestors(r.data))},[id]); if(!p)return <p>Carregando imovel...</p>; const s=p.summary; const cart=(cat:string)=>p.expenses.filter((e:any)=>e.category===cat); const total=(arr:any[])=>arr.reduce((a,e)=>a+Number(e.amount),0); return <section className="space-y-6"><div className="flex flex-wrap items-center justify-between gap-3"><div><h1 className="text-3xl font-bold text-brand-navy">{p.name}</h1><p className="text-slate-600">{p.city} {p.district && `- ${p.district}`}</p></div><div className="flex gap-2"><Badge>{p.status}</Badge><Link to={`/properties/${p.id}/edit`}><Button>Editar imovel</Button></Link></div></div><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5"><SummaryCard title="Compra" value={brl(s.totalPurchase)}/><SummaryCard title="Avaliacao atual" value={brl(p.currentAppraisal)}/><SummaryCard title="Avaliacao antiga" value={brl(p.oldAppraisal)}/><SummaryCard title="Venda prevista" value={brl(p.expectedSalePrice)}/><SummaryCard title="Venda realizada" value={brl(p.finalSalePrice)}/><SummaryCard title="Custos" value={brl(s.totalExtraExpenses)}/><SummaryCard title="Custo total" value={brl(s.totalCost)}/><SummaryCard title="Lucro previsto" value={brl(s.expectedProfit)}/><SummaryCard title="Lucro realizado" value={brl(s.finalProfit)}/><SummaryCard title="% lucro" value={pct(s.finalProfitPercent)}/><SummaryCard title="Tempo" value={s.timeInMonths === null ? "Venda pendente" : `${s.timeInMonths} meses`}/></div><Card><h2 className="mb-3 text-lg font-bold text-brand-navy">Adicionar custo</h2><ExpenseForm investors={p.investors} onSubmit={async d=>{await api.post(`/properties/${id}/expenses`,d); load();}}/></Card><Card><h2 className="mb-3 text-lg font-bold text-brand-navy">Custos</h2><Table><thead><tr><Th>Descricao</Th><Th>Categoria</Th><Th>Valor</Th><Th>Pago por</Th></tr></thead><tbody>{p.expenses.map((e:any)=><tr key={e.id}><Td>{e.description}</Td><Td>{e.category}</Td><Td>{brl(e.amount)}</Td><Td>{e.paidByInvestor?.name || 'Geral'}</Td></tr>)}</tbody></Table></Card><div className="grid gap-4 xl:grid-cols-2"><Cartorio title="Cartorio 1" items={cart('CARTORIO_1')} total={total(cart('CARTORIO_1'))}/><Cartorio title="Cartorio 2" items={cart('CARTORIO_2')} total={total(cart('CARTORIO_2'))}/></div><Card><h2 className="mb-3 text-lg font-bold text-brand-navy">Adicionar investidor ao imovel</h2><PropertyInvestorForm investors={investors} onSubmit={async d=>{await api.post(`/properties/${id}/investors`,d); load();}}/></Card><Card><h2 className="mb-3 text-lg font-bold text-brand-navy">Investidores do imovel</h2><Table><thead><tr><Th>Nome</Th><Th>Aporte</Th><Th>% participacao</Th><Th>% lucro</Th><Th>Retorno previsto</Th><Th>Retorno realizado</Th><Th>Pago</Th><Th>Saldo</Th></tr></thead><tbody>{p.investorReturns.map((i:any)=><tr key={i.id}><Td>{i.investor.name}</Td><Td>{brl(i.initialContribution)}</Td><Td>{Number(i.ownershipPercent).toFixed(2)}%</Td><Td>{Number(i.profitPercent).toFixed(2)}%</Td><Td>{brl(i.expectedReturn)}</Td><Td>{brl(i.finalReturn)}</Td><Td>{brl(i.amountAlreadyPaid)}</Td><Td>{brl(i.balanceToPay)}</Td></tr>)}</tbody></Table></Card><Card><h2 className="mb-3 text-lg font-bold text-brand-navy">Registrar pagamento ao investidor</h2><InvestorPaymentForm links={p.investors} onSubmit={async d=>{await api.post(`/properties/${id}/payments`,d); load();}}/></Card><Card><h2 className="mb-3 text-lg font-bold text-brand-navy">Pagamentos aos investidores</h2><Table><thead><tr><Th>Investidor</Th><Th>Valor</Th><Th>Data</Th><Th>Descricao</Th></tr></thead><tbody>{p.payments.map((pay:any)=><tr key={pay.id}><Td>{pay.investor.name}</Td><Td>{brl(pay.amount)}</Td><Td>{pay.paymentDate?.slice(0,10)}</Td><Td>{pay.description}</Td></tr>)}</tbody></Table></Card><div className="grid gap-4 xl:grid-cols-3"><Card><h2 className="font-bold text-brand-navy">Condominio</h2><p>Meses: {p.condominiumMonths || 0}</p><p>Valor mensal: {brl(p.condominiumMonthlyValue)}</p><p>Total: {brl(p.condominiumTotal)}</p><p>Ultimo pago: {p.condominiumLastPaidMonth || '-'}</p></Card><Card><h2 className="font-bold text-brand-navy">Datas importantes</h2><p>Compra: {p.purchaseDate?.slice(0,10) || '-'}</p><p>Avaliacao: {p.appraisalDate?.slice(0,10) || '-'}</p><p>Venda: {p.saleDate?.slice(0,10) || 'Venda pendente'}</p><p>Retorno: {p.returnDate?.slice(0,10) || '-'}</p></Card><Card><h2 className="font-bold text-brand-navy">Documentos</h2><p>Matricula: {p.registryNumber || '-'}</p><p>IPTU: {p.iptuNumber || '-'}</p><p>CPF comprador: {p.buyerCpf || '-'}</p></Card></div><Card><h2 className="font-bold text-brand-navy">Observacoes</h2><p className="whitespace-pre-wrap text-slate-700">{p.notes || '-'}</p></Card></section>}
-function Cartorio({title,items,total}:{title:string;items:any[];total:number}){const previsto=total; const realizado=total; return <Card><h2 className="mb-3 text-lg font-bold text-brand-navy">{title}</h2><Table><thead><tr><Th>Item</Th><Th>Valor</Th></tr></thead><tbody>{items.length?items.map(i=><tr key={i.id}><Td>{i.description}</Td><Td>{brl(i.amount)}</Td></tr>):["Registro","ITBI","Escritura","Taxa a vista","Produto","Matricula + Onus","Abono","Certidao"].map(x=><tr key={x}><Td>{x}</Td><Td>{brl(0)}</Td></tr>)}</tbody></Table><div className="mt-3 grid grid-cols-3 gap-2 text-sm"><span>Total previsto: <b>{brl(previsto)}</b></span><span>Total realizado: <b>{brl(realizado)}</b></span><span>Diferenca: <b>{brl(previsto-realizado)}</b></span></div></Card>}
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { ExpenseForm } from "../components/ExpenseForm";
+import { InvestorPaymentForm } from "../components/InvestorPaymentForm";
+import { PropertyInvestorForm } from "../components/PropertyInvestorForm";
+import { SummaryCard } from "../components/SummaryCard";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Card } from "../components/ui/card";
+import { Table, Td, Th } from "../components/ui/table";
+import { api } from "../lib/api";
+import { brl, pct } from "../lib/utils";
+
+export function PropertyDetailsPage() {
+  const { id } = useParams();
+  const [p, setP] = useState<any>();
+  const [investors, setInvestors] = useState<any[]>([]);
+  const load = () => api.get(`/properties/${id}`).then((r) => setP(r.data));
+
+  useEffect(() => {
+    load();
+    api.get("/investors").then((r) => setInvestors(r.data));
+  }, [id]);
+
+  if (!p) return <p>Carregando imovel...</p>;
+
+  const s = p.summary;
+  const cart = (cat: string) => p.expenses.filter((e: any) => e.category === cat);
+  const total = (arr: any[]) => arr.reduce((a, e) => a + Number(e.amount), 0);
+
+  return (
+    <section className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-bold text-brand-navy">{p.name}</h1>
+          <p className="text-slate-600">
+            {p.city} {p.district && `- ${p.district}`}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Badge>{p.status}</Badge>
+          <Link to={`/properties/${p.id}/edit`}>
+            <Button>Editar imovel</Button>
+          </Link>
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <SummaryCard title="Compra" value={brl(s.totalPurchase)} />
+        <SummaryCard title="Avaliacao atual" value={brl(p.currentAppraisal)} />
+        <SummaryCard title="Avaliacao antiga" value={brl(p.oldAppraisal)} />
+        <SummaryCard title="Venda prevista" value={brl(p.expectedSalePrice)} />
+        <SummaryCard title="Venda realizada" value={brl(p.finalSalePrice)} />
+        <SummaryCard title="Custos" value={brl(s.totalExtraExpenses)} />
+        <SummaryCard title="Custo total" value={brl(s.totalCost)} />
+        <SummaryCard title="Lucro previsto" value={brl(s.expectedProfit)} />
+        <SummaryCard title="Lucro realizado" value={brl(s.finalProfit)} />
+        <SummaryCard title="% lucro" value={pct(s.finalProfitPercent)} />
+        <SummaryCard title="Tempo" value={s.timeInMonths === null ? "Venda pendente" : `${s.timeInMonths} meses`} />
+      </div>
+
+      <Card>
+        <h2 className="mb-3 text-lg font-bold text-brand-navy">Adicionar custo</h2>
+        <ExpenseForm investors={p.investors} onSubmit={async (d) => { await api.post(`/properties/${id}/expenses`, d); load(); }} />
+      </Card>
+
+      <Card>
+        <h2 className="mb-3 text-lg font-bold text-brand-navy">Custos</h2>
+        <Table>
+          <thead>
+            <tr>
+              <Th>Descricao</Th>
+              <Th>Categoria</Th>
+              <Th>Valor</Th>
+              <Th>Aplicacao</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {p.expenses.map((e: any) => (
+              <tr key={e.id}>
+                <Td>{e.description}</Td>
+                <Td>{e.category}</Td>
+                <Td>{brl(e.amount)}</Td>
+                <Td>{e.paidByInvestor?.name ? `100% para ${e.paidByInvestor.name}` : "Dividido entre investidores"}</Td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </Card>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <Cartorio title="Cartorio 1" items={cart("CARTORIO_1")} total={total(cart("CARTORIO_1"))} />
+        <Cartorio title="Cartorio 2" items={cart("CARTORIO_2")} total={total(cart("CARTORIO_2"))} />
+      </div>
+
+      <Card>
+        <h2 className="mb-3 text-lg font-bold text-brand-navy">Adicionar investidor ao imovel</h2>
+        <PropertyInvestorForm investors={investors} onSubmit={async (d) => { await api.post(`/properties/${id}/investors`, d); load(); }} />
+      </Card>
+
+      <Card>
+        <h2 className="mb-3 text-lg font-bold text-brand-navy">Investidores do imovel</h2>
+        <Table>
+          <thead>
+            <tr>
+              <Th>Nome</Th>
+              <Th>Aporte</Th>
+              <Th>% participacao</Th>
+              <Th>Custo dividido</Th>
+              <Th>Custo direto</Th>
+              <Th>Custo total individual</Th>
+              <Th>Retorno previsto</Th>
+              <Th>Retorno realizado</Th>
+              <Th>Pago</Th>
+              <Th>Saldo</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {p.investorReturns.map((i: any) => (
+              <tr key={i.id}>
+                <Td>{i.investor.name}</Td>
+                <Td>{brl(i.initialContribution)}</Td>
+                <Td>{Number(i.ownershipPercent).toFixed(2)}%</Td>
+                <Td>{brl(i.sharedExpenses)}</Td>
+                <Td>{brl(i.directExpenses)}</Td>
+                <Td>{brl(i.totalInvestorCost)}</Td>
+                <Td>{brl(i.expectedReturn)}</Td>
+                <Td>{brl(i.finalReturn)}</Td>
+                <Td>{brl(i.amountAlreadyPaid)}</Td>
+                <Td>{brl(i.balanceToPay)}</Td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </Card>
+
+      <Card>
+        <h2 className="mb-3 text-lg font-bold text-brand-navy">Registrar pagamento ao investidor</h2>
+        <InvestorPaymentForm links={p.investors} onSubmit={async (d) => { await api.post(`/properties/${id}/payments`, d); load(); }} />
+      </Card>
+
+      <Card>
+        <h2 className="mb-3 text-lg font-bold text-brand-navy">Pagamentos aos investidores</h2>
+        <Table>
+          <thead>
+            <tr>
+              <Th>Investidor</Th>
+              <Th>Valor</Th>
+              <Th>Data</Th>
+              <Th>Descricao</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {p.payments.map((pay: any) => (
+              <tr key={pay.id}>
+                <Td>{pay.investor.name}</Td>
+                <Td>{brl(pay.amount)}</Td>
+                <Td>{pay.paymentDate?.slice(0, 10)}</Td>
+                <Td>{pay.description}</Td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </Card>
+
+      <div className="grid gap-4 xl:grid-cols-3">
+        <Card>
+          <h2 className="font-bold text-brand-navy">Condominio</h2>
+          <p>Meses: {p.condominiumMonths || 0}</p>
+          <p>Valor mensal: {brl(p.condominiumMonthlyValue)}</p>
+          <p>Total: {brl(p.condominiumTotal)}</p>
+          <p>Ultimo pago: {p.condominiumLastPaidMonth || "-"}</p>
+        </Card>
+        <Card>
+          <h2 className="font-bold text-brand-navy">Datas importantes</h2>
+          <p>Compra: {p.purchaseDate?.slice(0, 10) || "-"}</p>
+          <p>Avaliacao: {p.appraisalDate?.slice(0, 10) || "-"}</p>
+          <p>Venda: {p.saleDate?.slice(0, 10) || "Venda pendente"}</p>
+          <p>Retorno: {p.returnDate?.slice(0, 10) || "-"}</p>
+        </Card>
+        <Card>
+          <h2 className="font-bold text-brand-navy">Documentos</h2>
+          <p>Matricula: {p.registryNumber || "-"}</p>
+          <p>IPTU: {p.iptuNumber || "-"}</p>
+          <p>CPF comprador: {p.buyerCpf || "-"}</p>
+        </Card>
+      </div>
+
+      <Card>
+        <h2 className="font-bold text-brand-navy">Observacoes</h2>
+        <p className="whitespace-pre-wrap text-slate-700">{p.notes || "-"}</p>
+      </Card>
+    </section>
+  );
+}
+
+function Cartorio({ title, items, total }: { title: string; items: any[]; total: number }) {
+  const previsto = total;
+  const realizado = total;
+  return (
+    <Card>
+      <h2 className="mb-3 text-lg font-bold text-brand-navy">{title}</h2>
+      <Table>
+        <thead>
+          <tr>
+            <Th>Item</Th>
+            <Th>Valor</Th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.length
+            ? items.map((i) => (
+                <tr key={i.id}>
+                  <Td>{i.description}</Td>
+                  <Td>{brl(i.amount)}</Td>
+                </tr>
+              ))
+            : ["Registro", "ITBI", "Escritura", "Taxa a vista", "Produto", "Matricula + Onus", "Abono", "Certidao"].map((x) => (
+                <tr key={x}>
+                  <Td>{x}</Td>
+                  <Td>{brl(0)}</Td>
+                </tr>
+              ))}
+        </tbody>
+      </Table>
+      <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
+        <span>Total previsto: <b>{brl(previsto)}</b></span>
+        <span>Total realizado: <b>{brl(realizado)}</b></span>
+        <span>Diferenca: <b>{brl(previsto - realizado)}</b></span>
+      </div>
+    </Card>
+  );
+}
