@@ -1,0 +1,13 @@
+<svg width="320" height="84" viewBox="0 0 320 84" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="320" height="84" rx="14" fill="#F8FAFC"/>
+  <path d="M22 48L48 26L74 48" stroke="#0B1F3A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M30 45V70H66V45" stroke="#0B1F3A" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M43 70V56H53V70" stroke="#059669" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M72 28L91 47" stroke="#D4A017" stroke-width="5" stroke-linecap="round"/>
+  <path d="M82 18L101 37" stroke="#D4A017" stroke-width="7" stroke-linecap="round"/>
+  <path d="M88 55H111" stroke="#D4A017" stroke-width="5" stroke-linecap="round"/>
+  <path d="M116 66L132 52L145 58L163 36" stroke="#059669" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M158 36H166V44" stroke="#059669" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="181" y="36" font-family="Arial, sans-serif" font-weight="700" font-size="18" fill="#0B1F3A">Investindo</text>
+  <text x="181" y="59" font-family="Arial, sans-serif" font-weight="700" font-size="18" fill="#059669">com Leilao</text>
+</svg>

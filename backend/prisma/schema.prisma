@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PropertyType {
+  APARTAMENTO
+  CASA
+  LOTE
+  OUTRO
+}
+
+enum PropertyStatus {
+  EM_ANALISE
+  ARREMATADO
+  EM_REGULARIZACAO
+  EM_REFORMA
+  A_VENDA
+  VENDIDO
+  CANCELADO
+}
+
+enum ExpenseCategory {
+  COMPRA
+  CARTORIO_1
+  CARTORIO_2
+  REFORMA
+  MATERIAL
+  MAO_DE_OBRA
+  CONDOMINIO
+  IPTU
+  LAUDO
+  COMISSAO_CORRETOR
+  COMISSAO_IMOBILIARIA
+  LUZ
+  AGUA
+  ACORDO_SAIDA
+  MATRICULA
+  CERTIDAO
+  CHAVEIRO
+  LIMPEZA
+  INDICACAO
+  OUTROS
+}
+
+enum SplitType {
+  POR_APORTE
+  PERCENTUAL_MANUAL
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Investor {
+  id                String             @id @default(cuid())
+  name              String
+  email             String?
+  phone             String?
+  document          String?
+  notes             String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  propertyInvestors PropertyInvestor[]
+  paidExpenses      Expense[]
+  payments          InvestorPayment[]
+}
+
+model Property {
+  id                         String             @id @default(cuid())
+  name                       String
+  unit                       String?
+  city                       String?
+  district                   String?
+  address                    String?
+  type                       PropertyType       @default(APARTAMENTO)
+  status                     PropertyStatus     @default(EM_ANALISE)
+  purchasePrice              Decimal            @db.Decimal(14, 2)
+  currentAppraisal           Decimal?           @db.Decimal(14, 2)
+  oldAppraisal               Decimal?           @db.Decimal(14, 2)
+  expectedSalePrice          Decimal?           @db.Decimal(14, 2)
+  finalSalePrice             Decimal?           @db.Decimal(14, 2)
+  purchaseDate               DateTime?
+  appraisalDate              DateTime?
+  saleDate                   DateTime?
+  returnDate                 DateTime?
+  registryNumber             String?
+  iptuNumber                 String?
+  buyerCpf                   String?
+  condominiumMonths          Int?
+  condominiumMonthlyValue    Decimal?           @db.Decimal(14, 2)
+  condominiumTotal           Decimal?           @db.Decimal(14, 2)
+  condominiumLastPaidMonth   String?
+  notes                      String?
+  createdAt                  DateTime           @default(now())
+  updatedAt                  DateTime           @updatedAt
+  expenses                   Expense[]
+  investors                  PropertyInvestor[]
+  payments                   InvestorPayment[]
+}
+
+model PropertyInvestor {
+  id                String     @id @default(cuid())
+  propertyId        String
+  investorId        String
+  initialContribution Decimal  @db.Decimal(14, 2)
+  ownershipPercent Decimal?    @db.Decimal(8, 4)
+  profitPercent    Decimal?    @db.Decimal(8, 4)
+  splitType         SplitType   @default(POR_APORTE)
+  expectedReturn    Decimal?    @db.Decimal(14, 2)
+  finalReturn       Decimal?    @db.Decimal(14, 2)
+  amountAlreadyPaid Decimal?    @db.Decimal(14, 2)
+  balanceToPay      Decimal?    @db.Decimal(14, 2)
+  notes             String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  property          Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  investor          Investor    @relation(fields: [investorId], references: [id], onDelete: Restrict)
+
+  @@unique([propertyId, investorId])
+}
+
+model Expense {
+  id               String          @id @default(cuid())
+  propertyId       String
+  paidByInvestorId String?
+  description      String
+  category         ExpenseCategory
+  amount           Decimal         @db.Decimal(14, 2)
+  paymentDate      DateTime?
+  paymentMethod    String?
+  notes            String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  property         Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  paidByInvestor   Investor?       @relation(fields: [paidByInvestorId], references: [id], onDelete: SetNull)
+}
+
+model InvestorPayment {
+  id          String   @id @default(cuid())
+  propertyId  String
+  investorId  String
+  amount      Decimal  @db.Decimal(14, 2)
+  paymentDate DateTime?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  investor    Investor @relation(fields: [investorId], references: [id], onDelete: Restrict)
+}
+
+model Setting {
+  id            String   @id @default(cuid())
+  cdiAnnualRate Decimal? @db.Decimal(8, 4)
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

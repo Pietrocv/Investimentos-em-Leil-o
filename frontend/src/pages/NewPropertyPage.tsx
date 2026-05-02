@@ -1,0 +1,2 @@
+import { useNavigate } from "react-router-dom"; import { Card } from "../components/ui/card"; import { PropertyForm } from "../components/PropertyForm"; import { api } from "../lib/api";
+export function NewPropertyPage(){const nav=useNavigate(); return <section className="space-y-4"><h1 className="text-3xl font-bold text-brand-navy">Novo imovel</h1><Card><PropertyForm onSubmit={async d=>{const r=await api.post('/properties',d); nav(`/properties/${r.data.id}`)}}/></Card></section>}

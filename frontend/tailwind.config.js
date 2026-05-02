@@ -1,0 +1,1 @@
+export default { darkMode: ["class"], content: ["./index.html", "./src/**/*.{ts,tsx}"], theme: { extend: { colors: { brand: { navy: "#0B1F3A", green: "#059669", gold: "#D4A017", bg: "#F8FAFC", text: "#111827" } } } }, plugins: [require("tailwindcss-animate")] };

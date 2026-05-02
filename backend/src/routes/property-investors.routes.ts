@@ -1,0 +1,13 @@
+import { FastifyInstance } from "fastify";
+import { z } from "zod";
+import { prisma } from "../lib/prisma.js";
+import { authMiddleware } from "../middlewares/auth-middleware.js";
+const schema = z.object({ investorId: z.string(), initialContribution: z.coerce.number().nonnegative(), ownershipPercent: z.coerce.number().min(0).max(100).optional().nullable(), profitPercent: z.coerce.number().min(0).max(100).optional().nullable(), splitType: z.enum(["POR_APORTE", "PERCENTUAL_MANUAL"]).default("POR_APORTE"), expectedReturn: z.coerce.number().nonnegative().optional().nullable(), finalReturn: z.coerce.number().nonnegative().optional().nullable(), amountAlreadyPaid: z.coerce.number().nonnegative().optional().nullable(), balanceToPay: z.coerce.number().optional().nullable(), notes: z.string().optional().nullable() });
+async function recalc(propertyId: string) { const items = await prisma.propertyInvestor.findMany({ where: { propertyId } }); const total = items.reduce((s, i) => s + Number(i.initialContribution), 0); await Promise.all(items.filter(i => i.splitType === "POR_APORTE").map(i => prisma.propertyInvestor.update({ where: { id: i.id }, data: { ownershipPercent: total > 0 ? Number(i.initialContribution) / total * 100 : 0 } }))); }
+export async function propertyInvestorsRoutes(app: FastifyInstance) {
+  app.addHook("preHandler", authMiddleware);
+  app.get("/properties/:propertyId/investors", async (request) => { const { propertyId } = z.object({ propertyId: z.string() }).parse(request.params); return prisma.propertyInvestor.findMany({ where: { propertyId }, include: { investor: true } }); });
+  app.post("/properties/:propertyId/investors", async (request, reply) => { const { propertyId } = z.object({ propertyId: z.string() }).parse(request.params); const body = schema.parse(request.body); const created = await prisma.propertyInvestor.create({ data: { ...body, propertyId } }); await recalc(propertyId); return reply.status(201).send(created); });
+  app.patch("/property-investors/:id", async (request) => { const { id } = z.object({ id: z.string() }).parse(request.params); const old = await prisma.propertyInvestor.findUniqueOrThrow({ where: { id } }); const updated = await prisma.propertyInvestor.update({ where: { id }, data: schema.partial().parse(request.body) }); await recalc(old.propertyId); return updated; });
+  app.delete("/property-investors/:id", async (request) => { const { id } = z.object({ id: z.string() }).parse(request.params); const old = await prisma.propertyInvestor.findUniqueOrThrow({ where: { id } }); await prisma.propertyInvestor.delete({ where: { id } }); await recalc(old.propertyId); return { ok: true }; });
+}
