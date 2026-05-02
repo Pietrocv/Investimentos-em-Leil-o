@@ -29,7 +29,7 @@ async function main() {
     { name: "Jaspe 07", unit: "07", purchasePrice: 62624.60, currentAppraisal: 142000, expectedSalePrice: 131000, finalSalePrice: 131000, status: "VENDIDO", purchaseDate: "2024-10-01", saleDate: "2025-07-01", links: [["Pietro", 42626.60], ["Victor", 20000]] },
     { name: "Monte Siao I P 201", unit: "P 201", purchasePrice: 67068.27, currentAppraisal: 140000, expectedSalePrice: 132000, finalSalePrice: 132000, status: "VENDIDO", purchaseDate: "2025-06-26", saleDate: "2025-10-26", links: [["Pietro", 67068.27]] },
     { name: "Monte Siao V N 201", unit: "N 201", purchasePrice: 76464.05, currentAppraisal: 132000, expectedSalePrice: 110000, finalSalePrice: 110000, status: "VENDIDO", purchaseDate: "2025-07-14", saleDate: "2025-12-26", links: [["Pietro", 76464.05]] },
-    { name: "Montana A15 01", unit: "A15 01", district: "Ypiranga", purchasePrice: 73400, currentAppraisal: 138000, expectedSalePrice: 128270.28, finalSalePrice: 128270.28, status: "VENDIDO", purchaseDate: "2025-01-15", saleDate: "2025-09-15", links: [["Pietro", 25700], ["Jeff", 36700], ["Bia", 11000]] },
+    { name: "Montana A15 01", unit: "A15 01", district: "Ypiranga", purchasePrice: 73400, currentAppraisal: 138000, expectedSalePrice: 128270.28, finalSalePrice: 128270.28, status: "VENDIDO", purchaseDate: "2025-01-15", saleDate: "2025-09-15", links: [["Pietro", 25700, 35.01], ["Jeff", 36700, 50], ["Bia", 11000, 14.99]] },
     { name: "Montana B13 01", unit: "B13 01", district: "Ypiranga", purchasePrice: 62819.40, currentAppraisal: 153000, expectedSalePrice: 142000, status: "A_VENDA", purchaseDate: "2026-01-15", links: [["Pietro", 31409.70], ["Jeferson", 31409.70]] },
     { name: "Recanto Jovens 02 A8", purchasePrice: 59444.27, currentAppraisal: 145000, expectedSalePrice: 140000, status: "A_VENDA", purchaseDate: "2026-01-15", links: [["Bia", 59444.27]] },
     { name: "Lisboa Life", purchasePrice: 70000, currentAppraisal: 135000, expectedSalePrice: 128500, finalSalePrice: 128500, status: "VENDIDO", purchaseDate: "2024-01-15", saleDate: "2024-09-15", links: [["Pietro", 35000], ["Rodrigo", 35000]] },
@@ -44,10 +44,10 @@ async function main() {
     }
     const property = await prisma.property.create({ data: propertyData });
     for (const [description, category, amount] of expenseSets[item.name]) await prisma.expense.create({ data: { propertyId: property.id, description, category, amount, paymentDate: new Date("2024-03-10") } });
-    for (const [name, contribution] of item.links) await prisma.propertyInvestor.create({ data: { propertyId: property.id, investorId: investors[name], initialContribution: contribution, splitType: SplitType.POR_APORTE } });
+    for (const [name, contribution, ownershipPercent] of item.links) await prisma.propertyInvestor.create({ data: { propertyId: property.id, investorId: investors[name], initialContribution: contribution, ownershipPercent: ownershipPercent || undefined, splitType: ownershipPercent ? SplitType.PERCENTUAL_MANUAL : SplitType.POR_APORTE } });
     const links = await prisma.propertyInvestor.findMany({ where: { propertyId: property.id } });
     const total = links.reduce((s, l) => s + Number(l.initialContribution), 0);
-    for (const link of links) await prisma.propertyInvestor.update({ where: { id: link.id }, data: { ownershipPercent: total ? Number(link.initialContribution) / total * 100 : 0 } });
+    for (const link of links.filter((link) => link.splitType === SplitType.POR_APORTE)) await prisma.propertyInvestor.update({ where: { id: link.id }, data: { ownershipPercent: total ? Number(link.initialContribution) / total * 100 : 0 } });
   }
   const setting = await prisma.setting.findFirst();
   if (!setting) await prisma.setting.create({ data: { cdiAnnualRate: 10.65, notes: "Configuracao inicial para comparacao futura com CDI." } });
